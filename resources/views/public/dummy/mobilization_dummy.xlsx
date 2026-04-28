@@ -1,0 +1,5 @@
+name,email,mobile,highest_qualification,dob,gender,marital_status,state,city,location,languages,current_salary,preferred_salary
+Rahul Sharma,rahul@gmail.com,9876543210,B.Tech,1998-05-12,Male,Single,Maharashtra,Nagpur,Dharampeth,Hindi,25000,35000
+Priya Patel,priya@gmail.com,9876500000,MBA,1995-03-22,Female,Married,Gujarat,Ahmedabad,Navrangpura,Hindi,30000,40000
+Amit Verma,amit@gmail.com,9123456780,B.Com,2000-07-18,Male,Single,Delhi,New Delhi,Rohini,Hindi,20000,30000
+Sneha Iyer,sneha@gmail.com,9988776655,M.Sc,1997-11-09,Female,Single,Karnataka,Bangalore,Whitefield,English,28000,38000
