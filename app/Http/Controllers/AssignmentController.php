@@ -77,8 +77,22 @@ public function index(Request $request)
     $assignments = $query
         ->orderBy('date','desc')
         ->get();
+        $totalRequirement = $assignments->sum('requirement');
+$totalRegs        = $assignments->sum('mobilizations_count');
+$totalBuild       = $assignments->sum('total_build');
+$totalBilled      = $assignments->sum('billed_qty');
 
-    return view('assignments.index', compact('assignments'));
+$totalLeft = $assignments->sum(function ($a) {
+    return ($a->requirement ?? 0) - ($a->total_build ?? 0);
+});
+
+    return view('assignments.index', compact(
+     'assignments',
+    'totalRequirement',
+    'totalRegs',
+    'totalBuild',
+    'totalBilled',
+    'totalLeft'));
 }
 
    
@@ -357,16 +371,23 @@ public function destroy($id)
 {
     $assignment = Assignment::findOrFail($id);
 
-    // ❗ Prevent delete if batches exist
+    // Check batch relation
     if ($assignment->batches()->exists()) {
-        return redirect()->route('assignments.index')
-            ->with('error', 'Assignment cannot be deleted because batches are attached.');
+        return back()->with('error', 'Assignment has batches attached.');
+    }
+
+    // ❗ NEW CHECK (IMPORTANT)
+    $hasStudents = DB::table('batch_assignment_students')
+        ->where('assignment_id', $id)
+        ->exists();
+
+    if ($hasStudents) {
+        return back()->with('error', 'Assignment has assigned candidates. Remove them first.');
     }
 
     $assignment->delete();
 
-    return redirect()->route('assignments.index')
-        ->with('success', 'Assignment deleted successfully.');
+    return back()->with('success', 'Assignment deleted successfully.');
 }
 
 public function progress(Request $request)

@@ -240,19 +240,15 @@ td {
                             <td>
                                 <form
                                     action="{{ route('batches.candidates.destroy', [$batch->id, $candidate->candidate_id]) }}"
-                                    method="POST" style="display:inline"
+                                    method="POST"
                                     onsubmit="return confirm('Remove candidate {{ $candidate->student_id }} ?')">
 
                                     @csrf
                                     @method('DELETE')
 
-                                    <a href="{{ route('batches.candidates.delete',$candidate->candidate_id) }}"
-                                        onclick="return confirm('Remove candidate {{ $candidate->student_id }} ?')"
-                                        class="btn btn-red">
-
+                                    <button type="submit" class="btn btn-red">
                                         <i class="fa-solid fa-trash"></i> Remove
-                                    </a>
-
+                                    </button>
                                 </form>
 
                             </td>

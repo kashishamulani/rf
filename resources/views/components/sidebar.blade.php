@@ -282,16 +282,18 @@ li:not(.menu-group)>a:hover span {
                 <a href="{{ route('links.index') }}" class="{{ Route::is('links.*') ? 'active' : '' }}"><span>🔗 Forms
                         template</span></a>
 
-                <a href="{{ route('link-assignments.index') }}"class="{{ Route::is('link-assignments.*') ? 'active' : '' }}">
+                <a href="{{ route('link-assignments.index') }}"
+                    class="{{ Route::is('link-assignments.*') ? 'active' : '' }}">
                     <span>🔗 Assignment Forms</span>
                 </a>
 
-                <a href="{{ route('mobilizations.index') }}"class="{{ Route::is('mobilizations.*') ? 'active' : '' }}"><span>🗄 Mobilization</span></a>
+                <a href="{{ route('mobilizations.index') }}"
+                    class="{{ Route::is('mobilizations.*') ? 'active' : '' }}"><span>🗄 Mobilization</span></a>
             </div>
         </li>
 
         {{-- MASTER --}}
-       
+
         <li class="menu-group" id="managementMenu">
             <a id="managementToggle">
                 <span>⚙️ Master</span>
@@ -311,6 +313,20 @@ li:not(.menu-group)>a:hover span {
                     class="{{ Route::is('team-members.*') ? 'active' : '' }}"><span>👥 Team Members</span></a>
                 <a href="{{ route('roles.index') }}" class="{{ Route::is('roles.*') ? 'active' : '' }}"><span>🛡️ Job
                         Roles</span></a>
+            </div>
+        </li>
+
+
+        <li class="menu-group" id="reportsMenu">
+            <a id="reportsToggle">
+                <span>📊 Reports</span>
+                <span class="arrow">▾</span>
+            </a>
+
+            <div class="submenu">
+                <a href="{{ route('reports.business') }}" class="{{ Route::is('reports.business') ? 'active' : '' }}">
+                    <span>📈 Business</span>
+                </a>
             </div>
         </li>
     </ul>

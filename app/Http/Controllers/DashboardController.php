@@ -16,130 +16,175 @@ use App\Models\Payment;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
+public function index()
+{
+    /*
+    |--------------------------------------------------------------------------
+    | FINANCIAL YEAR (DEFAULT = 2026-2027)
+    |--------------------------------------------------------------------------
+    */
 
-        /*
-        |--------------------------------------------------------------------------
-        | BASIC COUNTS
-        |--------------------------------------------------------------------------
-        */
+    $fy = request('fy') ?? '2026-2027';
 
-        $formatsCount = Format::count();
-        $hrCount = Hr::count();
-        $assignmentsCount = Assignment::count();
-        $batchesCount = Batch::count();
-        $poCount = Po::count();
-        $phaseCount = Phase::count();
-        $activitiesCount = Activity::count();
-        $teamMembersCount = TeamMember::count();
-        $activityAssignmentsCount = ActivityAssignment::count();
+    [$startYear, $endYear] = explode('-', $fy);
+
+    $startDate = $startYear . '-04-01';
+    $endDate   = $endYear . '-03-31';
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | REQUIREMENT DATA
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | BASIC COUNTS (WITH FY FILTER)
+    |--------------------------------------------------------------------------
+    */
 
-        $totalRequirements = Assignment::sum('requirement');
-
-
-        $totalBuild = \DB::table('assignment_batch')->sum('build');
-        $totalBilledQty = \DB::table('invoice_assignment_items')
-    ->join('invoices','invoices.id','=','invoice_assignment_items.invoice_id')
-    ->sum('invoice_assignment_items.quantity') ?? 0;
-
-        $totalLeft = $totalRequirements - $totalBuild;
-
-
+    $formatsCount = Format::whereBetween('created_at', [$startDate, $endDate])->count();
+    $hrCount = Hr::whereBetween('created_at', [$startDate, $endDate])->count();
+    $assignmentsCount = Assignment::whereBetween('created_at', [$startDate, $endDate])->count();
+    $batchesCount = Batch::whereBetween('created_at', [$startDate, $endDate])->count();
+    $poCount = Po::whereBetween('created_at', [$startDate, $endDate])->count();
+    $phaseCount = Phase::whereBetween('created_at', [$startDate, $endDate])->count();
+    $activitiesCount = Activity::whereBetween('created_at', [$startDate, $endDate])->count();
+    $teamMembersCount = TeamMember::whereBetween('created_at', [$startDate, $endDate])->count();
+    $activityAssignmentsCount = ActivityAssignment::whereBetween('created_at', [$startDate, $endDate])->count();
 
 
-// 1️⃣ Total Billing Amount (Quantity × Value)
-$totalBilled = Invoice::sum('batch_value');
+    /*
+    |--------------------------------------------------------------------------
+    | REQUIREMENT DATA
+    |--------------------------------------------------------------------------
+    */
 
-// Prevent null
-$totalBilled = $totalBilled ?? 0;
+    $totalRequirements = Assignment::whereBetween('created_at', [$startDate, $endDate])
+        ->sum('requirement');
 
+    $totalBuild = \DB::table('assignment_batch')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->sum('build');
 
-// 2️⃣ Total Received (from pivot table)
-$totalReceived = \DB::table('invoice_payment')->sum('amount');
+    $totalBilledQty = \DB::table('invoice_assignment_items')
+        ->join('invoices', 'invoices.id', '=', 'invoice_assignment_items.invoice_id')
+        ->whereBetween('invoices.created_at', [$startDate, $endDate])
+        ->sum('invoice_assignment_items.quantity') ?? 0;
 
-
-// 3️⃣ Remaining
-$totalPending = max(0, $totalBilled - $totalReceived);
-
-
- 
-
-        $totalAssignments = Assignment::count();
-        $pendingAssignments = Assignment::where('status', 'Pending')->count();
-
-        $cancelledAssignments = Assignment::where('status', 'Cancelled')->count();
-
-        $inProgressAssignments = Assignment::where('status', 'In Progress')->count();
-
-        $completedAssignments = Assignment::where('status', 'Completed')->count();
+    $totalLeft = $totalRequirements - $totalBuild;
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | BATCH STATUS
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | BILLING DATA
+    |--------------------------------------------------------------------------
+    */
 
-      $totalBatches   = Batch::count();
-    $openBatches    = Batch::where('status', 'Open')->count();
-    $closedBatches  = Batch::where('status', 'Closed')->count();
-    $cancelledBatches = Batch::where('status', 'Cancelled')->count();
-    $onHoldBatches  = Batch::where('status', 'On Hold')->count();
-    $billedBatches  = Batch::where('status', 'Billed')->count();
+    $totalBilled = Invoice::whereBetween('created_at', [$startDate, $endDate])
+        ->sum('batch_value') ?? 0;
+
+    $totalReceived = \DB::table('invoice_payment')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->sum('amount');
+
+    $totalPending = max(0, $totalBilled - $totalReceived);
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | RETURN DASHBOARD
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | ASSIGNMENT STATUS
+    |--------------------------------------------------------------------------
+    */
 
-        return view('dashboard', compact(
+    $totalAssignments = Assignment::whereBetween('created_at', [$startDate, $endDate])->count();
 
-            'formatsCount',
-            'hrCount',
-            'assignmentsCount',
-            'batchesCount',
-            'poCount',
-            'phaseCount',
-            'activitiesCount',
-            'teamMembersCount',
-            'activityAssignmentsCount',
+    $pendingAssignments = Assignment::where('status', 'Pending')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
 
-            // Requirement
-            'totalRequirements',
-            'totalBuild',
-            'totalLeft',
-            'totalBilledQty',
+    $cancelledAssignments = Assignment::where('status', 'Cancelled')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
 
-            // Billing
-            'totalBilled',
-            'totalReceived',
-            'totalPending',
+    $inProgressAssignments = Assignment::where('status', 'In Progress')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
 
-            // Assignment
-            'totalAssignments',
-             'pendingAssignments',
-            'cancelledAssignments',
-            'inProgressAssignments',
-            'completedAssignments',
+    $completedAssignments = Assignment::where('status', 'Completed')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
 
-            // Batch
-             'totalBatches',
+
+    /*
+    |--------------------------------------------------------------------------
+    | BATCH STATUS
+    |--------------------------------------------------------------------------
+    */
+
+    $totalBatches = Batch::whereBetween('created_at', [$startDate, $endDate])->count();
+
+    $openBatches = Batch::where('status', 'Open')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
+
+    $closedBatches = Batch::where('status', 'Closed')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
+
+    $cancelledBatches = Batch::where('status', 'Cancelled')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
+
+    $onHoldBatches = Batch::where('status', 'On Hold')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
+
+    $billedBatches = Batch::where('status', 'Billed')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->count();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RETURN VIEW
+    |--------------------------------------------------------------------------
+    */
+
+    return view('dashboard', compact(
+
+        'fy',
+
+        'formatsCount',
+        'hrCount',
+        'assignmentsCount',
+        'batchesCount',
+        'poCount',
+        'phaseCount',
+        'activitiesCount',
+        'teamMembersCount',
+        'activityAssignmentsCount',
+
+        // Requirement
+        'totalRequirements',
+        'totalBuild',
+        'totalLeft',
+        'totalBilledQty',
+
+        // Billing
+        'totalBilled',
+        'totalReceived',
+        'totalPending',
+
+        // Assignment
+        'totalAssignments',
+        'pendingAssignments',
+        'cancelledAssignments',
+        'inProgressAssignments',
+        'completedAssignments',
+
+        // Batch
+        'totalBatches',
         'openBatches',
         'closedBatches',
         'cancelledBatches',
         'onHoldBatches',
         'billedBatches'
-
-        ));
-    }
+    ));
+}   
 }

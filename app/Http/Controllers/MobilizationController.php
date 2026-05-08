@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use ZipArchive;
+
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Mobilization;
@@ -26,6 +28,8 @@ class MobilizationController extends Controller
 
 public function index(Request $request)
 {
+
+
     $query = Mobilization::query()
         ->with([
             'assignments' => function ($q) {
@@ -158,7 +162,7 @@ public function store(Request $request)
     $request->validate(array_merge([
         'name'   => 'required|string|max:255',
         'mobile' => 'required|unique:mobilizations,mobile|max:15',
-        'email'  => 'nullable|email|unique:mobilizations,email|max:255',
+        'email' => 'nullable|email|max:255|unique:mobilizations,email,NULL,id',
           'pan_number' => ['nullable','regex:/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/'],
          'aadhar_number' => ['nullable','digits:12'],
 
@@ -374,7 +378,7 @@ public function update(Request $request, Mobilization $mobilization)
 
     $request->validate(array_merge([
         'name'   => 'required|string|max:255',
-        'email' => 'nullable|email|unique:mobilizations,email,' . $mobilization->id,
+        'email' => 'nullable|email|max:255|unique:mobilizations,email,' . $mobilization->id,
         'mobile' => 'required|max:15|unique:mobilizations,mobile,' . $mobilization->id,
         'pan_number' => ['nullable','regex:/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/'],
         'aadhar_number' => ['nullable','digits:12'],
@@ -1046,122 +1050,117 @@ public function getContactDetails($id)
 public function getFormFiles($id)
 {
     try {
-        $mobilization = Mobilization::findOrFail($id);
-        
-        // Get the latest form response with values
-        $formResponse = FormResponse::with([
+        $mobilization = Mobilization::with(['documents', 'education'])->findOrFail($id);
+
+        $files = [];
+
+        // Get files from form responses
+        $formResponses = FormResponse::with([
             'values.field',
             'form'
         ])
         ->where('mobilization_id', $id)
         ->latest()
-        ->first();
-        
-        if (!$formResponse) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No form response found'
-            ]);
-        }
-        
-        // Filter only file type fields
-        $files = [];
-        foreach ($formResponse->values as $value) {
-            if ($value->file_url && $value->field) {
-                $files[] = [
-                    'field_label' => $value->field->label,
-                    'file_url' => $value->file_url,
-                    'file_name' => basename($value->file_url),
-                    'file_type' => $value->file_type,
-                    'file_size' => $value->file_size,
-                    'file_extension' => $value->file_extension
-                ];
+        ->get();
+
+        $formTitle = 'Form';
+
+        foreach ($formResponses as $formResponse) {
+            if ($formResponse->form) {
+                $formTitle = $formResponse->form->title ?? 'Form';
+            }
+
+            foreach ($formResponse->values as $value) {
+                if ($value->file_url) {
+                    $files[] = [
+                        'field_label'   => $value->field ? $value->field->label : 'File',
+                        'file_url'      => $value->file_url,
+                        'file_name'     => basename($value->file_url),
+                        'file_type'     => $value->file_type,
+                        'file_size'     => $value->file_size,
+                        'file_extension'=> $value->file_extension
+                    ];
+                }
             }
         }
-        
+
+        // Mobilization documents
+        if ($mobilization->documents) {
+            $docFiles = [
+                'photo' => $mobilization->documents->photo,
+                'signature' => $mobilization->documents->signature,
+                'aadhar_front' => $mobilization->documents->aadhar_front,
+                'aadhar_back' => $mobilization->documents->aadhar_back,
+                'pan_card' => $mobilization->documents->pan_card,
+                'driving_license' => $mobilization->documents->driving_license,
+                'experience_letter' => $mobilization->documents->experience_letter,
+                'passbook_photo' => $mobilization->documents->passbook_photo,
+            ];
+
+            foreach ($docFiles as $label => $file) {
+                if ($file) {
+                    $files[] = [
+                        'field_label'   => ucfirst(str_replace('_', ' ', $label)),
+                        'file_url'      => $file,
+                        'file_name'     => basename($file),
+                        'file_type'     => 'document',
+                        'file_size'     => null,
+                        'file_extension'=> pathinfo($file, PATHINFO_EXTENSION)
+                    ];
+                }
+            }
+        }
+
+        // Education files
+        if ($mobilization->education) {
+            $eduFiles = [
+                'tenth_marksheet' => $mobilization->education->tenth_marksheet,
+                'twelfth_marksheet' => $mobilization->education->twelfth_marksheet,
+                'graduation_marksheet' => $mobilization->education->graduation_marksheet,
+                'post_graduation_marksheet' => $mobilization->education->post_graduation_marksheet,
+            ];
+
+            foreach ($eduFiles as $label => $file) {
+                if ($file) {
+                    $files[] = [
+                        'field_label'   => ucfirst(str_replace('_', ' ', $label)),
+                        'file_url'      => $file,
+                        'file_name'     => basename($file),
+                        'file_type'     => 'document',
+                        'file_size'     => null,
+                        'file_extension'=> pathinfo($file, PATHINFO_EXTENSION)
+                    ];
+                }
+            }
+        }
+
+        // Remove duplicates
+        $uniqueFiles = [];
+        $seenUrls = [];
+
+        foreach ($files as $file) {
+            if (!in_array($file['file_url'], $seenUrls)) {
+                $uniqueFiles[] = $file;
+                $seenUrls[] = $file['file_url'];
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'files' => $files,
+            'files' => $uniqueFiles,
             'mobilization_name' => $mobilization->name,
-            'form_title' => $formResponse->form->title ?? 'Form'
+            'form_title' => $formTitle
         ]);
-        
+
     } catch (\Exception $e) {
+        \Log::error("getFormFiles error: " . $e->getMessage());
+
         return response()->json([
             'success' => false,
-            'message' => $e->getMessage()
+            'message' => 'Something went wrong'
         ], 500);
     }
 }
-
-// private function processUploadedFile($file, $fileType, $folder)
-// {
-//     try {
-//         $extension = strtolower($file->getClientOriginalExtension());
-//         $filename = time() . '_' . uniqid() . '.' . $extension;
-//         $path = public_path($folder . '/' . $filename);
-
-//         // Ensure folder exists
-//         if (!file_exists(public_path($folder))) {
-//             mkdir(public_path($folder), 0755, true);
-//         }
-
-//         // ================= IMAGE PROCESSING =================
-//         if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-
-//             // 🔥 REMOVE BACKGROUND (remove.bg API)
-//             $response = Http::withHeaders([
-//                 'X-Api-Key' => 'VJ8WcPUK35EpvEtFcvhyKWyM'
-//             ])->attach(
-//                 'image_file',
-//                 file_get_contents($file),
-//                 $filename
-//             )->post('https://api.remove.bg/v1.0/removebg', [
-//                 'size' => 'auto'
-//             ]);
-
-//             if ($response->successful()) {
-//                 file_put_contents($path, $response->body());
-//             } else {
-//                 // fallback (save original if API fails)
-//                 move_uploaded_file($file->getPathname(), $path);
-//             }
-
-//             return $folder . '/' . $filename;
-//         }
-
-//         // ================= PDF COMPRESSION =================
-//         if ($extension === 'pdf') {
-
-//             // Step 1: Upload to ILovePDF
-//             $upload = Http::attach(
-//                 'file',
-//                 file_get_contents($file),
-//                 $filename
-//             )->post('https://api.ilovepdf.com/v1/start/compress');
-
-//             if (!$upload->successful()) {
-//                 move_uploaded_file($file->getPathname(), $path);
-//                 return $folder . '/' . $filename;
-//             }
-
-//             $data = $upload->json();
-
-//             move_uploaded_file($file->getPathname(), $path);
-
-//             return $folder . '/' . $filename;
-//         }
-
-//         // ================= DEFAULT =================
-//         move_uploaded_file($file->getPathname(), $path);
-
-//         return $folder . '/' . $filename;
-
-//     } catch (\Exception $e) {
-//         \Log::error("File Processing Error: " . $e->getMessage());
-//         return null;
-//     }
-// }
 
 
 private function processUploadedFile($file, $fileType, $folder)
@@ -1249,4 +1248,99 @@ private function processUploadedFile($file, $fileType, $folder)
         return null;
     }
 }
+
+ public function downloadFile(Request $request)
+    {
+        $request->validate([
+            'file_url' => 'required|string',
+            'file_name' => 'nullable|string'
+        ]);
+        
+        $filePath = $request->file_url;
+        $fileName = $request->file_name ?? basename($filePath);
+        
+        // Decode URL if needed
+        $filePath = urldecode($filePath);
+        
+        // Try different storage paths
+        if (Storage::disk('public')->exists($filePath)) {
+            return Storage::disk('public')->download($filePath, $fileName);
+        }
+        
+        if (Storage::exists($filePath)) {
+            return Storage::download($filePath, $fileName);
+        }
+        
+        return response()->json(['error' => 'File not found'], 404);
+    }
+
+    /**
+     * Download multiple files as ZIP
+     */
+public function downloadFilesAsZip(Request $request)
+{
+    $request->validate([
+        'file_urls' => 'required|array',
+        'file_urls.*' => 'string'
+    ]);
+
+    $fileUrls = $request->file_urls;
+
+    if (empty($fileUrls)) {
+        return response()->json(['error' => 'No files selected'], 400);
+    }
+
+    $zip = new \ZipArchive();
+
+    // Create temp file in system temp (NO permission issue)
+    $tempFile = tempnam(sys_get_temp_dir(), 'zip');
+
+    if ($zip->open($tempFile, \ZipArchive::CREATE) !== TRUE) {
+        return response()->json(['error' => 'Could not create ZIP'], 500);
+    }
+
+    $added = 0;
+
+    foreach ($fileUrls as $fileUrl) {
+
+        $filePath = ltrim(urldecode($fileUrl), '/');
+
+        // Try from storage
+        if (\Storage::disk('public')->exists($filePath)) {
+            $fullPath = \Storage::disk('public')->path($filePath);
+        } 
+        // Try from public
+        elseif (file_exists(public_path($filePath))) {
+            $fullPath = public_path($filePath);
+        } 
+        else {
+            continue;
+        }
+
+        if (!file_exists($fullPath)) {
+            continue;
+        }
+
+        $fileName = basename($filePath);
+        $fileName = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $fileName);
+
+        if ($zip->locateName($fileName) !== false) {
+            $fileName = time() . '_' . $fileName;
+        }
+
+        // Add file directly
+        $zip->addFile($fullPath, $fileName);
+        $added++;
+    }
+
+    $zip->close();
+
+    if ($added === 0) {
+        return response()->json(['error' => 'No valid files found'], 404);
+    }
+
+    return response()->download($tempFile, 'documents.zip')->deleteFileAfterSend(true);
 }
+}
+
+

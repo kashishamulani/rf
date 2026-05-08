@@ -101,12 +101,12 @@ public function students($formId)
     }
 }
 
-   public function store(Request $request, Batch $batch)
+public function store(Request $request, Batch $batch)
 {
     $request->validate([
         'assignment_id' => 'required|exists:assignments,id',
         'students' => 'required|array|min:1',
-        'students.*' => 'required|string' // JSON string
+        'students.*' => 'required|string'
     ]);
 
     $assignmentId = $request->assignment_id;
@@ -116,97 +116,149 @@ public function students($formId)
     foreach ($request->students as $studentJson) {
         try {
             $studentData = json_decode($studentJson, true);
-            
-            // Validate the decoded data
-            if (!isset($studentData['assignment_id']) || !isset($studentData['student_id'])) {
-                $errorMessages[] = "Invalid student data format";
-                continue;
-            }
-            
-            // Ensure assignment_id matches
-            if ($studentData['assignment_id'] != $assignmentId) {
-                $errorMessages[] = "Assignment ID mismatch for student: " . $studentData['student_id'];
+
+            if (!isset($studentData['student_id'])) {
+                $errorMessages[] = "Invalid student data";
                 continue;
             }
 
-            // Insert into database
             DB::table('batch_assignment_students')->updateOrInsert(
                 [
                     'batch_id'      => $batch->id,
                     'assignment_id' => $assignmentId,
                     'student_id'    => $studentData['student_id'],
                 ],
-                [] // no update fields needed
+                [
+                    // ✅ STORE FULL DATA (IMPORTANT)
+                    'name'     => $studentData['name'] ?? null,
+                    'mobile'   => $studentData['mobile'] ?? null,
+                    'email'    => $studentData['email'] ?? null,
+                    'district' => $studentData['district'] ?? null,
+                    'state'    => $studentData['state'] ?? null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
             );
-            
+
             $successCount++;
-            
+
         } catch (\Exception $e) {
-            $errorMessages[] = "Error saving student: " . $e->getMessage();
+            $errorMessages[] = $e->getMessage();
         }
     }
 
     if ($successCount > 0) {
-        $message = "Successfully added {$successCount} candidate(s) to batch";
-        
-        if (!empty($errorMessages)) {
-            $message .= ". " . count($errorMessages) . " error(s) occurred.";
-            // Log errors
-            \Log::error('Batch candidate save errors:', $errorMessages);
-        }
-        
         return redirect()
             ->route('batches.index')
-            ->with('success', $message);
-    } else {
-        return redirect()
-            ->back()
-            ->with('error', 'Failed to add candidates. Please try again.')
-            ->withInput();
+            ->with('success', "Added {$successCount} candidates successfully");
     }
+
+    return redirect()->back()->with('error', 'Failed to add candidates');
 }
+
+
 
 public function view(Batch $batch)
 {
-    // Get assignments with forms
+    // Get assignments of this batch
     $assignments = $batch->assignments()->with('forms')->get();
-    
-    // Get candidates with assignment details
-    // $candidates = \DB::table('batch_assignment_students')
-    //     ->where('batch_assignment_students.batch_id', $batch->id)
-    //     ->join('assignments', 'batch_assignment_students.assignment_id', '=', 'assignments.id')
-    //     ->select(
-    //         'batch_assignment_students.id as candidate_id',
-    //         'batch_assignment_students.*',
-    //         'assignments.assignment_name',
-    //         'assignments.location',
-    //         'assignments.state'
-    //     )
-    //     ->orderBy('batch_assignment_students.created_at', 'desc')
-    //     ->get();
 
-    $candidates = DB::table('batch_assignment_students')
-    ->join('mobilizations','mobilizations.id','=','batch_assignment_students.student_id')
-    ->join('assignments','assignments.id','=','batch_assignment_students.assignment_id')
-    ->where('batch_assignment_students.batch_id',$batch->id)
-    ->select(
-        'batch_assignment_students.id as candidate_id',
-        'batch_assignment_students.student_id',
-        'mobilizations.name as candidate_name',
-        'mobilizations.mobile',
-        'assignments.assignment_name',
-        'batch_assignment_students.created_at'
-    )
-    ->get();
-    
-    // Group candidates by assignment
+    $assignmentIds = $assignments->pluck('id');
+
+    /*
+    |--------------------------------------------------------------------------
+    | 1. Candidates added directly to Batch
+    |--------------------------------------------------------------------------
+    */
+    $batchCandidates = DB::table('batch_assignment_students')
+        ->join('assignments', 'assignments.id', '=', 'batch_assignment_students.assignment_id')
+        ->where('batch_assignment_students.batch_id', $batch->id)
+        ->select(
+            'batch_assignment_students.id as candidate_id',
+            'batch_assignment_students.assignment_id',
+            'batch_assignment_students.student_id',
+            'batch_assignment_students.name as candidate_name',
+            'batch_assignment_students.mobile',
+            'batch_assignment_students.email',
+            'batch_assignment_students.district',
+            'batch_assignment_students.state',
+            'assignments.assignment_name',
+            'batch_assignment_students.created_at',
+            DB::raw("'batch' as source") // पहचान के लिए
+        )
+        ->get();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 2. OLD Candidates (Assignment Students)
+    |--------------------------------------------------------------------------
+    */
+    $assignmentCandidates = DB::table('assignment_students')
+        ->join('mobilizations', 'mobilizations.id', '=', 'assignment_students.mobilization_id')
+        ->join('assignments', 'assignments.id', '=', 'assignment_students.assignment_id')
+        ->whereIn('assignment_students.assignment_id', $assignmentIds)
+        ->select(
+            'assignment_students.id as candidate_id',
+            'assignment_students.assignment_id',
+            'mobilizations.id as student_id',
+            'mobilizations.name as candidate_name',
+            'mobilizations.mobile',
+            'mobilizations.email',
+           
+            'assignments.assignment_name',
+            'assignment_students.created_at',
+            DB::raw("'assignment' as source") // पहचान के लिए
+        )
+        ->get();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 3. Merge both
+    |--------------------------------------------------------------------------
+    */
+    $candidates = $batchCandidates->merge($assignmentCandidates);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 4. Remove duplicates (same student + assignment)
+    |--------------------------------------------------------------------------
+    */
+    $candidates = $candidates->unique(function ($item) {
+        return $item->assignment_id . '-' . $item->student_id;
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 5. Sort latest first
+    |--------------------------------------------------------------------------
+    */
+    $candidates = $candidates->sortByDesc('created_at')->values();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 6. Group & Count
+    |--------------------------------------------------------------------------
+    */
     $candidatesByAssignment = $candidates->groupBy('assignment_id');
-
-    // Get total candidate count
     $totalCandidates = $candidates->count();
 
-    return view('batches.view', compact('batch', 'assignments', 'candidatesByAssignment', 'totalCandidates'));
+
+    return view('batches.view', compact(
+        'batch',
+        'assignments',
+        'candidatesByAssignment',
+        'totalCandidates'
+    ));
 }
+
+
+
+
 
 public function destroyCandidate($candidateId)
 {
@@ -218,4 +270,19 @@ public function destroyCandidate($candidateId)
         return redirect()->back()->with('error', 'Failed to remove candidate: ' . $e->getMessage());
     }
 }
+
+public function destroy(Batch $batch, $candidateId)
+{
+    try {
+        DB::table('batch_assignment_students')
+            ->where('id', $candidateId)
+            ->where('batch_id', $batch->id) // safety
+            ->delete();
+
+        return redirect()->back()->with('success', 'Candidate removed successfully');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Failed to remove candidate: ' . $e->getMessage());
+    }
+}
+
 }

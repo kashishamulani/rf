@@ -42,6 +42,26 @@
 </style>
 
 
+<form method="GET" class="mb-4">
+   <select name="fy" onchange="this.form.submit()" class="form-control" style="width:200px;">
+    @php
+        $years = [];
+        for ($i = 2022; $i <= 2028; $i++) {
+            $years[] = $i . '-' . ($i + 1);
+        }
+
+        $selectedFY = request('fy') ?? '2026-2027';
+    @endphp
+
+    @foreach($years as $year)
+        <option value="{{ $year }}" {{ $selectedFY == $year ? 'selected' : '' }}>
+            {{ $year }}
+        </option>
+    @endforeach
+</select>
+</form>
+
+
 {{-- ================= REQUIREMENT SECTION ================= --}}
 <div class="section">
 

@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    <div>
+    <!-- <div>
         <h3 style="font-size:20px; font-weight:700; color:#334155; margin-bottom:12px;">Attached Files</h3>
         @if($fileValues->isEmpty())
             <div style="padding:18px; border:1px dashed #cbd5e1; border-radius:14px; color:#64748b;">No uploaded files found for this form assignment.</div>
@@ -106,7 +106,7 @@
                 </table>
             </div>
         @endif
-    </div>
+    </div> -->
 
 </div>
 

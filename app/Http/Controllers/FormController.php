@@ -1245,7 +1245,8 @@ public function submitPrefilled(Request $request, $formSlug, $mobilizationId)
         }
         
         $form = $prefillToken->form;
-        $mobilization = $prefillToken->mobilization;     
+        $mobilization = $prefillToken->mobilization;
+        $tokenValue = $prefillToken->token;
     
         $rules = [];
         foreach ($form->fields as $field) {
@@ -1264,13 +1265,13 @@ public function submitPrefilled(Request $request, $formSlug, $mobilizationId)
         
         $validated = $request->validate($rules);
         
-        \DB::transaction(function () use ($request, $form, $mobilization, $prefillToken, $token) {
+        \DB::transaction(function () use ($request, $form, $mobilization, $prefillToken, $tokenValue) {
            
             $response = FormResponse::create([
                 'form_id' => $form->id,
                 'mobilization_id' => $mobilization->id,
                 'uuid' => (string) \Str::uuid(),
-                'submitted_via_token' => $token
+                'submitted_via_token' => $tokenValue
             ]);
         
             $documentMapping = [
@@ -1489,7 +1490,7 @@ public function submitPrefilled(Request $request, $formSlug, $mobilizationId)
             $prefillToken->update(['used_at' => now()]);
         });
         
-        return redirect()->route('forms.prefilled.thankyou', ['token' => $token])
+        return redirect()->route('forms.prefilled.thankyou', ['token' => $tokenValue])
             ->with('success', 'Form submitted successfully!');
     }
 

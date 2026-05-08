@@ -17,8 +17,8 @@
 
 .field input,
 .field select {
-    padding: 12px;
-    border-radius: 12px;
+    padding: 6px;
+    border-radius: 4px;
     border: 1px solid #e5e7eb;
     font-size: 14px;
 }
@@ -39,7 +39,7 @@
     border-radius: 16px;
     margin-bottom: 22px;
     position: relative;
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+    box-shadow: 1px -1px 20px rgba(99, 102, 241, 0.15);
     backdrop-filter: blur(10px);
 }
 
@@ -99,15 +99,7 @@
 }
 
 
-/* TOP BAR CONTAINER */
-.form-top-bar {
-    width: 100%;
-    max-width: 1150px;
-    margin: 0 auto 20px auto;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-}
+
 
 /* BACK BUTTON */
 .back-btn {
@@ -116,46 +108,60 @@
     gap: 6px;
     padding: 8px 16px;
     border-radius: 10px;
-    background: #f3f4f6;
-    color: #374151;
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    color: #fff;
     text-decoration: none;
     font-weight: 600;
     transition: 0.2s;
 }
 
 .back-btn:hover {
-    background: linear-gradient(135deg, #6366f1, #ec4899);
-    color: #fff;
+
     transform: translateY(-1px);
 }
 
 .doc-row {
-    background: #ffffff;
-    padding: 18px;
-    border-radius: 14px;
-    margin-bottom: 18px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    background: #fdfeff;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
 }
+
+.hixu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+}
+
+
 
 label {
     display: block;
     font-weight: 600;
-    margin-bottom: 6px;
-    font-size: 14px;
+    margin-bottom: 4px;
+    font-size: 11px;
 }
 
 input[type="text"],
-input[type="file"] {
-    padding: 10px;
-    border-radius: 10px;
+input[type="file"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+select {
+    padding: 6px 8px;
+    font-size: 12px;
+    border-radius: 6px;
     border: 1px solid #ddd;
     width: 100%;
+    height: 42px;
+    box-sizing: border-box;
 }
 
 .btn-back {
@@ -178,23 +184,14 @@ input[type="file"] {
 </style>
 
 
-<!-- HEADER BAR -->
-<div class="form-top-bar">
 
-    <a href="{{ route('mobilizations.index') }}" class="back-btn">
-        <i class="fa-solid fa-arrow-left"></i>
-        Back
-    </a>
-
-</div>
-
-<div style="padding:20px; display:flex; justify-content:center; width:100%;">
+<div style=" display:flex; justify-content:center; width:100%;">
 
 
 
 
     <form method="POST" action="{{ route('mobilizations.store') }}" enctype="multipart/form-data"
-        style="width:100%; max-width:1150px; background:rgba(255,255,255,0.85); padding:32px 40px; border-radius:18px; backdrop-filter:blur(14px); box-shadow:0 20px 40px rgba(0,0,0,0.08);">
+        style="width:100%; background:rgba(255,255,255,0.85); padding:12px; border-radius:18px; backdrop-filter:blur(14px); box-shadow:0 20px 40px rgba(0,0,0,0.08);">
 
         @csrf
 
@@ -211,20 +208,33 @@ input[type="file"] {
         </div>
         @endif
 
-        {{-- FILE UPLOAD INFO --}}
-        <div
-            style="margin-bottom:20px; padding:14px 18px; border-radius:12px; background:#dbeafe; border:1px solid #bfdbfe; color:#1e40af; font-size:13px;">
-            <i class="fa-solid fa-info-circle"></i>
-            <strong>File Upload Guidelines:</strong> Only JPG, PNG, and PDF files are accepted. Maximum file size: 5MB
-            per file.
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:12px; ">
+            {{-- FILE UPLOAD INFO --}}
+            <div
+                style=" width:100%; padding:12px; border-radius:12px; background:#dbeafe; border:1px solid #bfdbfe; color:#1e40af; font-size:13px;">
+                <i class="fa-solid fa-info-circle"></i>
+                <strong>File Upload Guidelines:</strong> Only JPG, PNG, and PDF files are accepted. Maximum file size:
+                5MB
+                per file.
+            </div>
+
+
+            <!-- HEADER BAR -->
+            <div class="form-top-bar">
+                <a href="{{ route('mobilizations.index') }}" class="back-btn">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back
+                </a>
+            </div>
         </div>
 
 
 
         <!-- IDENTIFICATION REMARK SECTION -->
-        <div class="step active" id="step-identification" style="margin-bottom:24px;">
+        <div class="step active" id="step-identification" style="margin-bottom:8px;">
 
-            <h2 style="font-size:22px; font-weight:700; color:#4f46e5; margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:700; color:#4f46e5; margin-bottom:8px;">
                 Identification Remark
             </h2>
 
@@ -234,7 +244,7 @@ input[type="file"] {
 
                     <input type="text" name="identification_remark" maxlength="255"
                         placeholder="Enter identification remark"
-                        style="width:100%; padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+                        style="width:100%; padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
 
                 </div>
 
@@ -245,11 +255,11 @@ input[type="file"] {
 
         {{-- STEP 1: PERSONAL DETAILS --}}
         <div class="step active" id="step-1" style="margin-bottom:24px;">
-            <h2 style="font-size:22px; font-weight:700; color:#4f46e5; margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:700; color:#4f46e5; margin-bottom:8px;">
                 Step 1: Personal Details
             </h2>
 
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:6px;">
 
                 <div class="field">
                     <label>Full Name <span style="color:red">*</span></label>
@@ -267,12 +277,12 @@ input[type="file"] {
                 </div>
 
                 <div class="field">
-                    <label>Email <span style="color:red">*</span></label>
-                    <input type="email" name="email" required>
+                    <label>Email </label>
+                    <input type="email" name="email">
                 </div>
 
                 <div class="field">
-                    <label>Mobile</label>
+                    <label>Mobile <span style="color:red">*</span></label>
                     <input type="text" name="mobile">
                 </div>
 
@@ -295,17 +305,20 @@ input[type="file"] {
 
                 <div class="field">
                     <label>Job Role Category</label>
-                    <select name="role_id" id="top-role" style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+                    <select name="role_id" id="top-role"
+                        style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
                         <option value="">Select Role</option>
                         @foreach($roles as $role)
-                        <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                        <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
+                            {{ $role->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="field">
                     <label>Job Sub Role</label>
-                    <select name="sub_role_id" id="top-sub-role" style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+                    <select name="sub_role_id" id="top-sub-role"
+                        style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
                         <option value="">Select Sub Role</option>
                     </select>
                     <input type="hidden" id="top-sub-role-selected" value="{{ old('sub_role_id') }}">
@@ -326,7 +339,7 @@ input[type="file"] {
 
                 <div class="field">
                     <label>Gender</label>
-                    <select name="gender" style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+                    <select name="gender" style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
                         <option value="">Select Gender</option>
                         <option>Male</option>
                         <option>Female</option>
@@ -335,7 +348,7 @@ input[type="file"] {
 
                 <div class="field">
                     <label>Marital Status</label>
-                    <select name="marital_status" style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+                    <select name="marital_status" style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
                         <option value="">Select Marital Status</option>
                         <option>Single</option>
                         <option>Married</option>
@@ -399,7 +412,7 @@ input[type="file"] {
                 <div class="field">
                     <label>State</label>
                     <select name="state" id="state" class="form-select"
-                        style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+                        style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
                         <option value="">Select State</option>
                     </select>
                 </div>
@@ -407,18 +420,17 @@ input[type="file"] {
                 <div class="field">
                     <label>City/District</label>
                     <select name="city" id="city" class="form-select"
-                        style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+                        style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
                         <option value="">Select City</option>
                     </select>
                 </div>
 
                 <!-- Address Field (Full Width) -->
-                <div class="field" style="grid-column: 1 / -1;">
+                <div class="field">
                     <label>Address</label>
-                    <textarea name="location" rows="3"
-                        style="width:100%; padding:12px; border-radius:12px; border:1px solid #e5e7eb;"></textarea>
+                    <input name="location"
+                        style="width:100%; padding:10px; border-radius:6px; border:1px solid #e5e7eb;"></input>
                 </div>
-
             </div>
 
 
@@ -427,23 +439,46 @@ input[type="file"] {
 
         {{-- STEP 2: EXPERIENCE DETAILS --}}
         <div class="step" id="step-2" style="margin-bottom:24px;">
-            <h2 style="font-size:22px; font-weight:700; color:#4f46e5; margin-bottom:20px;">Step 2: Experience Details
+            <h2 style="font-size:18px; font-weight:700; color:#4f46e5; margin-bottom:8px;">Step 2: Experience Details
             </h2>
 
             <div id="experience-container">
                 <div class="experience-block exp-box">
-                    <div class="exp-title">Experience <span class="exp-count">1</span>
-                        <button type="button" class="remove-exp" onclick="removeExperience(this)">Remove</button>
+
+                    <div class="exp-title">
+                        Experience
+                        <div>
+                            <button type="button" class="add-exp-btn" onclick="addExperience()"
+                                style="padding:10px 18px; font-size:12px; background:#f1f5f9; border-radius:12px; border:none; cursor:pointer; display:inline-block;">+
+                                Add More Experience</button>
+
+                            <!--    <span class="exp-count">1</span> -->
+                            <button type="button" class="remove-exp" onclick="removeExperience(this)">Remove</button>
+                        </div>
                     </div>
 
-                    <div class="grid-2">
-                        <div class="field"><label>Organization</label><input type="text" name="organization[]"></div>
-                        <div class="field"><label>Designation</label><input type="text" name="designation[]"></div>
-                    </div>
 
-                    <div class="grid-2">
-                        <div class="field"><label>Duration</label><input type="text" name="duration[]"></div>
-                        <div class="field"><label>Job Role Category</label>
+
+                    <!-- ROW 1 -->
+                    <div class="grid-2" style="display: flex; align-items: center; gap: 20px;">
+                        <div class="field">
+                            <label>Organization</label>
+                            <input type="text" name="organization[]">
+                        </div>
+
+                        <div class="field">
+                            <label>Designation</label>
+                            <input type="text" name="designation[]">
+                        </div>
+
+                        <div class="field">
+                            <label>Duration</label>
+                            <input type="text" name="duration[]">
+                        </div>
+
+
+                        <div class="field">
+                            <label>Job Role Category</label>
                             <select name="role_category[]" class="role-category">
                                 <option value="">Select Role</option>
                                 @foreach($roles as $role)
@@ -451,22 +486,26 @@ input[type="file"] {
                                 @endforeach
                             </select>
                         </div>
+
+
+                        <!-- FULL WIDTH ROW -->
+                        <div class="field">
+                            <label>Job Sub Role</label>
+                            <select name="sub_role[]" class="sub-role">
+                                <option value="">Select Sub Role</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="field">
-                        <label>Job Sub Role</label>
-                        <select name="sub_role[]" class="sub-role">
-                            <option value="">Select Sub Role</option>
-                        </select>
-                    </div>
+
+
+
+
                 </div>
             </div>
 
-            <button type="button" onclick="addExperience()"
-                style="padding:10px 18px; background:#f1f5f9; border-radius:12px; border:none; cursor:pointer;">+ Add
-                More Experience</button>
 
-            <div class="grid-2" style="margin-top:20px;">
+            <div class="grid" style="margin-top:20px;">
                 <div class="field">
                     <label>Relocation Preference</label>
                     <select name="relocation">
@@ -482,17 +521,17 @@ input[type="file"] {
                     </select>
                 </div>
 
-                <div class="field">
-                    <label>Languages Known</label>
-                    <div class="tag-wrapper">
-                        <input type="text" id="language-input" placeholder="Type & Press Enter">
-                        <div id="language-tags"></div>
-                        <input type="hidden" name="languages" id="languages-hidden" value="{{ old('languages') }}">
-                    </div>
-                </div>
-
                 <div class="field"><label>Current Salary</label><input type="number" name="current_salary"></div>
                 <div class="field"><label>Preferred Salary</label><input type="number" name="preferred_salary"></div>
+            </div>
+
+            <div class="field" style="margin-top:12px;">
+                <label>Languages Known</label>
+                <div class="tag-wrapper">
+                    <input type="text" id="language-input" placeholder="Type & Press Enter">
+                    <div id="language-tags" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                    <input type="hidden" name="languages" id="languages-hidden" value="{{ old('languages') }}">
+                </div>
             </div>
         </div>
 
@@ -503,13 +542,13 @@ input[type="file"] {
 
         {{-- STEP 3: DOCUMENT UPLOAD --}}
         <div class="step" id="step-3">
-            <h2 style="font-size:22px; font-weight:700; color:#4f46e5; margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:700; color:#4f46e5; margin-bottom:8px;">
                 Step 3: Document & Details Upload
             </h2>
 
-            <!-- PAN -->
             <div class="doc-row">
-                <div class="grid">
+                <div class="grid field">
+                    <!-- PAN -->
                     <div>
                         <label>PAN Number</label>
                         <input type="text" name="pan_number" id="pan_number" placeholder="Enter PAN Number"
@@ -520,12 +559,8 @@ input[type="file"] {
                         <label>PAN Card Upload</label>
                         <input type="file" name="pan_card" accept=".jpg,.jpeg,.png,.pdf">
                     </div>
-                </div>
-            </div>
 
-            <!-- AADHAR -->
-            <div class="doc-row">
-                <div class="grid">
+                    <!-- AADHAR -->
                     <div>
                         <label>Aadhaar Number</label>
                         <input type="text" name="aadhar_number" id="aadhar_number" placeholder="Enter Aadhaar Number"
@@ -540,12 +575,8 @@ input[type="file"] {
                         <label>Aadhar Back</label>
                         <input type="file" name="aadhar_back" accept=".jpg,.jpeg,.png,.pdf">
                     </div>
-                </div>
-            </div>
 
-            <!-- PHOTO & SIGNATURE -->
-            <div class="doc-row">
-                <div class="grid">
+                    <!-- PHOTO & SIGNATURE -->
                     <div>
                         <label>Photo Upload</label>
                         <input type="file" name="photo" accept=".jpg,.jpeg,.png,.pdf">
@@ -554,12 +585,8 @@ input[type="file"] {
                         <label>Signature Upload</label>
                         <input type="file" name="signature" accept=".jpg,.jpeg,.png,.pdf">
                     </div>
-                </div>
-            </div>
 
-            <!-- BANK DETAILS -->
-            <div class="doc-row">
-                <div class="grid">
+                    <!-- BANK DETAILS -->
                     <div>
                         <label>Bank Account Number</label>
                         <input type="text" name="bank_account_number" placeholder="Enter Account Number">
@@ -572,12 +599,8 @@ input[type="file"] {
                         <label>Passbook Upload</label>
                         <input type="file" name="passbook_photo" accept=".jpg,.jpeg,.png,.pdf">
                     </div>
-                </div>
-            </div>
 
-            <!-- 10TH -->
-            <div class="doc-row">
-                <div class="grid">
+                    <!-- 10TH -->
                     <div>
                         <label>10th Passing Year</label>
                         <input type="text" name="tenth_passing_year" value="{{ old('tenth_passing_year') }}"
@@ -588,12 +611,8 @@ input[type="file"] {
                         <label>10th Marksheet</label>
                         <input type="file" name="tenth_marksheet" accept=".jpg,.jpeg,.png,.pdf">
                     </div>
-                </div>
-            </div>
 
-            <!-- 12TH -->
-            <div class="doc-row">
-                <div class="grid">
+                    <!-- 12TH -->
                     <div>
                         <label>12th Passing Year</label>
                         <input type="text" name="twelfth_passing_year" placeholder="Enter Passing Year">
@@ -602,12 +621,8 @@ input[type="file"] {
                         <label>12th Marksheet</label>
                         <input type="file" name="twelfth_marksheet" accept=".jpg,.jpeg,.png,.pdf">
                     </div>
-                </div>
-            </div>
 
-            <!-- GRADUATION -->
-            <div class="doc-row">
-                <div class="grid">
+                    <!-- GRADUATION -->
                     <div>
                         <label>Graduation Passing Year</label>
                         <input type="text" name="graduation_passing_year" placeholder="Enter Passing Year">
@@ -616,12 +631,8 @@ input[type="file"] {
                         <label>Graduation Marksheet</label>
                         <input type="file" name="graduation_marksheet" accept=".jpg,.jpeg,.png,.pdf">
                     </div>
-                </div>
-            </div>
 
-            <!-- POST GRADUATION -->
-            <div class="doc-row">
-                <div class="grid">
+                    <!-- POST GRADUATION -->
                     <div>
                         <label>Post Graduation Passing Year</label>
                         <input type="text" name="post_graduation_passing_year" placeholder="Enter Passing Year">
@@ -630,12 +641,8 @@ input[type="file"] {
                         <label>Post Graduation Marksheet</label>
                         <input type="file" name="post_graduation_marksheet" accept=".jpg,.jpeg,.png,.pdf">
                     </div>
-                </div>
-            </div>
 
-            <!-- OTHER DOCUMENTS -->
-            <div class="doc-row">
-                <div class="grid">
+                    <!-- OTHER DOCUMENTS -->
                     <div>
                         <label>Driving License</label>
                         <input type="file" name="driving_license" accept=".jpg,.jpeg,.png,.pdf">
@@ -646,15 +653,13 @@ input[type="file"] {
                     </div>
                 </div>
             </div>
-
-
         </div>
 
 
 
         {{-- STEP 4: REFERENCES --}}
         <div class="step" id="step-4" style="margin-top:30px;">
-            <h2 style="font-size:22px; font-weight:700; color:#4f46e5; margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:700; color:#4f46e5; margin-bottom:8px;">
                 Step 4: References
             </h2>
 
@@ -662,11 +667,19 @@ input[type="file"] {
 
                 <div class="reference-block exp-box">
                     <div class="exp-title">
-                        Reference <span class="ref-count">1</span>
-                        <button type="button" class="remove-exp" onclick="removeReference(this)">Remove</button>
+                        Reference
+                        <div>
+                            <button type="button" class="add-ref-btn" onclick="addReference()"
+                                style="padding:10px 18px; font-size:12px; background:#f1f5f9; border-radius:12px; border:none; cursor:pointer; display:inline-block;">+
+                                Add More Reference</button>
+
+                            <!--    <span class="exp-count">1</span> -->
+                            <button type="button" class="remove-exp" onclick="removeReference(this)">Remove</button>
+
+                        </div>
                     </div>
 
-                    <div class="grid">
+                    <div class="hixu">
                         <input type="text" name="reference_person[]" placeholder="Reference Person">
                         <input type="text" name="reference_mobile[]" placeholder="Mobile">
                         <input type="email" name="reference_email[]" placeholder="Email">
@@ -678,15 +691,11 @@ input[type="file"] {
 
             </div>
 
-            <button type="button" onclick="addReference()"
-                style="margin-top:15px; padding:10px 16px; border-radius:10px;">
-                + Add More Reference
-            </button>
 
 
 
-            <div style="margin-top:25px; display:flex; justify-content:space-between;">
-                <button type="button" onclick="prevStep(2)" class="btn-back">← Back</button>
+
+            <div style="margin-top:25px; display:flex; justify-content:flex-end;">
                 <button type="submit" class="btn-submit">Submit</button>
             </div>
         </div>
@@ -743,33 +752,72 @@ function removeExperience(btn) {
 }
 
 function updateExperienceNumbers() {
-    document.querySelectorAll('#experience-container .experience-block').forEach((block, index) => {
-        block.querySelector('.exp-count').innerText = index + 1;
+    let blocks = document.querySelectorAll('#experience-container .experience-block');
+    blocks.forEach((block, index) => {
+        let countSpan = block.querySelector('.exp-count');
+        if (countSpan) countSpan.innerText = index + 1;
+
+        let addBtn = block.querySelector('.add-exp-btn');
+        if (addBtn) {
+            if (index === blocks.length - 1) {
+                addBtn.style.display = 'inline-block';
+            } else {
+                addBtn.style.display = 'none';
+            }
+        }
     });
 }
 
 // State/City load
 document.addEventListener("DOMContentLoaded", function() {
+
     const stateSelect = document.getElementById("state");
     const citySelect = document.getElementById("city");
-    fetch("/states").then(res => res.json()).then(states => {
-        stateSelect.innerHTML = '<option value="">Select State</option>';
-        states.forEach(state => stateSelect.innerHTML +=
-            `<option value="${state.iso2}">${state.name}</option>`);
-    });
+
+    // Load states
+    fetch("/states")
+        .then(res => res.json())
+        .then(response => {
+            const states = Array.isArray(response) ? response : response.data || response.states || [];
+
+            let options = '<option value="">Select State</option>';
+
+            states.forEach(state => {
+                options += `<option value="${state.iso2}">${state.name}</option>`;
+            });
+
+            stateSelect.innerHTML = options;
+        })
+        .catch(err => console.error("States error:", err));
+
+    // 👇 THIS WAS MISSING / WRONG
     stateSelect.addEventListener("change", function() {
+
         const stateCode = this.value;
+
         citySelect.innerHTML = '<option>Loading...</option>';
+
         if (!stateCode) {
             citySelect.innerHTML = '<option value="">Select City</option>';
             return;
         }
-        fetch(`/districts/${stateCode}`).then(res => res.json()).then(cities => {
-            citySelect.innerHTML = '<option value="">Select City</option>';
-            cities.forEach(city => citySelect.innerHTML +=
-                `<option value="${city.name}">${city.name}</option>`);
-        });
+
+        fetch(`/districts/${stateCode}`)
+            .then(res => res.json())
+            .then(response => {
+                const cities = Array.isArray(response) ? response : response.data || [];
+
+                let options = '<option value="">Select City</option>';
+
+                cities.forEach(city => {
+                    options += `<option value="${city.name}">${city.name}</option>`;
+                });
+
+                citySelect.innerHTML = options;
+            })
+            .catch(err => console.error("City error:", err));
     });
+
 });
 
 // Role → Subrole dynamic
@@ -801,7 +849,8 @@ if (topRoleSelect) {
         fetch('/get-subroles/' + roleId).then(res => res.json()).then(data => {
             subRoleSelect.innerHTML = '<option value="">Select Sub Role</option>';
             data.forEach(sub => {
-                subRoleSelect.innerHTML += `<option value="${sub.id}" ${selectedValue == sub.id ? 'selected' : ''}>${sub.name}</option>`;
+                subRoleSelect.innerHTML +=
+                    `<option value="${sub.id}" ${selectedValue == sub.id ? 'selected' : ''}>${sub.name}</option>`;
             });
         });
     };
@@ -886,10 +935,20 @@ function removeReference(btn) {
 }
 
 function updateReferenceNumbers() {
-    document.querySelectorAll('#reference-container .reference-block')
-        .forEach((block, index) => {
-            block.querySelector('.ref-count').innerText = index + 1;
-        });
+    let blocks = document.querySelectorAll('#reference-container .reference-block');
+    blocks.forEach((block, index) => {
+        let countSpan = block.querySelector('.ref-count');
+        if (countSpan) countSpan.innerText = index + 1;
+
+        let addBtn = block.querySelector('.add-ref-btn');
+        if (addBtn) {
+            if (index === blocks.length - 1) {
+                addBtn.style.display = 'inline-block';
+            } else {
+                addBtn.style.display = 'none';
+            }
+        }
+    });
 }
 </script>
 @endsection

@@ -438,7 +438,7 @@
                         </div>
                         <div class="info-item">
                             <span class="info-label">Reg. Number</span>
-                            <span class="info-value">{{ $data->registration_number ?? '-' }}</span>
+                               <span class="info-value">{{ $data->registration_number ?? '-' }}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">EC Num / Date</span>
