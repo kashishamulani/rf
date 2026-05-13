@@ -393,20 +393,26 @@ input[type="file"] {
 
                     <div class="field">
                         <label>Job Role Category</label>
-                        <select name="role_id" id="top-role" style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+                        <select name="role_id" id="top-role"
+                            style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
                             <option value="">Select Role</option>
                             @foreach($roles as $role)
-                            <option value="{{ $role->id }}" {{ old('role_id',$mobilization->role_id) == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                            <option value="{{ $role->id }}"
+                                {{ old('role_id',$mobilization->role_id) == $role->id ? 'selected' : '' }}>
+                                {{ $role->name }}</option>
                             @endforeach
                         </select>
                     </div>
 
                     <div class="field">
                         <label>Job Sub Role</label>
-                        <select name="sub_role_id" id="top-sub-role" style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+                        <select name="sub_role_id" id="top-sub-role"
+                            style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
                             <option value="">Select Sub Role</option>
                             @foreach($subRoles as $subRole)
-                            <option value="{{ $subRole->id }}" {{ old('sub_role_id',$mobilization->sub_role_id) == $subRole->id ? 'selected' : '' }}>{{ $subRole->name }}</option>
+                            <option value="{{ $subRole->id }}"
+                                {{ old('sub_role_id',$mobilization->sub_role_id) == $subRole->id ? 'selected' : '' }}>
+                                {{ $subRole->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -515,19 +521,26 @@ input[type="file"] {
 
                     <div class="field">
                         <label>State</label>
-                        <select name="state" id="state" data-old="{{ old('state',$mobilization->state) }}"
+
+                        <select name="state" id="state" data-old="{{ old('state', $mobilization->state) }}"
                             style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+
                             <option value="">Select State</option>
+
                         </select>
                     </div>
 
                     <div class="field">
                         <label>City/District</label>
-                        <select name="city" id="city" data-old="{{ old('city',$mobilization->city) }}"
+
+                        <select name="city" id="city" data-old="{{ old('city', $mobilization->city) }}"
                             style="padding:12px; border-radius:12px; border:1px solid #e5e7eb;">
+
                             <option value="">Select City</option>
+
                         </select>
                     </div>
+
 
                     <!-- Address Field -->
                     <div class="field" style="grid-column: 1 / -1;">
@@ -601,23 +614,28 @@ input[type="file"] {
                 <div class="grid-2" style="margin-top:20px;">
 
                     @php
-                        $selectedRelocation = $mobilization->relocation;
-                        if (is_array($selectedRelocation)) {
-                            $selectedRelocation = reset($selectedRelocation);
-                        }
+                    $selectedRelocation = $mobilization->relocation;
+                    if (is_array($selectedRelocation)) {
+                    $selectedRelocation = reset($selectedRelocation);
+                    }
                     @endphp
                     <div class="field">
                         <label>Relocation Preference</label>
                         <select name="relocation">
                             <option value="">Select Preference</option>
-                            <option value="Same Location" {{ $selectedRelocation == 'Same Location' ? 'selected' : '' }}>Same Location</option>
-                            <option value="Same City" {{ $selectedRelocation == 'Same City' ? 'selected' : '' }}>Same City</option>
-                            <option value="Same State" {{ $selectedRelocation == 'Same State' ? 'selected' : '' }}>Same State</option>
+                            <option value="Same Location"
+                                {{ $selectedRelocation == 'Same Location' ? 'selected' : '' }}>Same Location</option>
+                            <option value="Same City" {{ $selectedRelocation == 'Same City' ? 'selected' : '' }}>Same
+                                City</option>
+                            <option value="Same State" {{ $selectedRelocation == 'Same State' ? 'selected' : '' }}>Same
+                                State</option>
                             <option value="North" {{ $selectedRelocation == 'North' ? 'selected' : '' }}>North</option>
                             <option value="South" {{ $selectedRelocation == 'South' ? 'selected' : '' }}>South</option>
                             <option value="East" {{ $selectedRelocation == 'East' ? 'selected' : '' }}>East</option>
                             <option value="West" {{ $selectedRelocation == 'West' ? 'selected' : '' }}>West</option>
-                            <option value="Anywhere in India" {{ $selectedRelocation == 'Anywhere in India' ? 'selected' : '' }}>Anywhere in India</option>
+                            <option value="Anywhere in India"
+                                {{ $selectedRelocation == 'Anywhere in India' ? 'selected' : '' }}>Anywhere in India
+                            </option>
                         </select>
                     </div>
 
@@ -675,14 +693,14 @@ input[type="file"] {
 
                                 {{-- IMAGE --}}
                                 @if(Str::endsWith(optional($mobilization->documents)->pan_card, ['jpg','jpeg','png']))
-                                <img src="{{ route('document.view', optional($mobilization->documents)->pan_card) }}" width="120"
-                                    style="border-radius:8px;">
+                                <img src="{{ route('document.view', optional($mobilization->documents)->pan_card) }}"
+                                    width="120" style="border-radius:8px;">
                                 @endif
 
                                 {{-- PDF --}}
                                 @if(Str::endsWith(optional($mobilization->documents)->pan_card, ['pdf']))
-                                <a href="{{ route('document.view', optional($mobilization->documents)->pan_card) }}" target="_blank"
-                                    class="btn btn-sm btn-primary">
+                                <a href="{{ route('document.view', optional($mobilization->documents)->pan_card) }}"
+                                    target="_blank" class="btn btn-sm btn-primary">
                                     View PAN PDF
                                 </a>
                                 @endif
@@ -730,7 +748,8 @@ input[type="file"] {
 
                             @if(!empty(optional($mobilization->documents)->aadhar_back))
                             <p class="text-xs mb-1">
-                                <a target="_blank" href="{{ route('document.view', optional($mobilization->documents)->aadhar_back) }}">View</a>
+                                <a target="_blank"
+                                    href="{{ route('document.view', optional($mobilization->documents)->aadhar_back) }}">View</a>
                             </p>
                             @endif
 
@@ -747,7 +766,8 @@ input[type="file"] {
 
                             @if(!empty(optional($mobilization->documents)->photo))
                             <p class="text-xs mb-1">
-                                <a target="_blank" href="{{ route('document.view', optional($mobilization->documents)->photo) }}">View</a>
+                                <a target="_blank"
+                                    href="{{ route('document.view', optional($mobilization->documents)->photo) }}">View</a>
                             </p>
                             @endif
 
@@ -759,7 +779,8 @@ input[type="file"] {
 
                             @if(!empty(optional($mobilization->documents)->signature))
                             <p class="text-xs mb-1">
-                                <a target="_blank" href="{{ route('document.view', optional($mobilization->documents)->signature) }}">View</a>
+                                <a target="_blank"
+                                    href="{{ route('document.view', optional($mobilization->documents)->signature) }}">View</a>
                             </p>
                             @endif
 
@@ -779,7 +800,8 @@ input[type="file"] {
 
                         <div>
                             <label>IFSC Code</label>
-                            <input type="text" name="ifsc_code" value="{{ old('ifsc_code',$mobilization->bank->ifsc_code ?? '') }}">
+                            <input type="text" name="ifsc_code"
+                                value="{{ old('ifsc_code',$mobilization->bank->ifsc_code ?? '') }}">
                         </div>
 
                         <div>
@@ -787,7 +809,8 @@ input[type="file"] {
 
                             @if(!empty(optional($mobilization->documents)->passbook_photo))
                             <p class="text-xs mb-1">
-                                <a target="_blank" href="{{ route('document.view', optional($mobilization->documents)->passbook_photo) }}">View</a>
+                                <a target="_blank"
+                                    href="{{ route('document.view', optional($mobilization->documents)->passbook_photo) }}">View</a>
                             </p>
                             @endif
 
@@ -797,7 +820,7 @@ input[type="file"] {
                 </div>
 
                 <!-- 10TH -->
-               <div class="doc-row">
+                <div class="doc-row">
                     <div class="grid">
                         <div>
                             <label>10th Passing Year</label>
@@ -1066,75 +1089,16 @@ function updateExperienceNumbers() {
 </script>
 
 
-
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+    window.stateDropdownId = "state";
+    window.cityDropdownId = "city";
 
-    const stateSelect = document.getElementById('state');
-    const citySelect = document.getElementById('city');
-
-    const oldState = stateSelect.dataset.old;
-    const oldCity = citySelect.dataset.old;
-
-    console.log("OLD STATE:", oldState);
-    console.log("OLD CITY:", oldCity);
-
-    // LOAD STATES
-    fetch('/states')
-        .then(res => res.json())
-        .then(states => {
-
-            stateSelect.innerHTML = '<option value="">Select State</option>';
-
-            states.forEach(state => {
-
-                const selected = oldState == state.iso2 ? 'selected' : '';
-
-                stateSelect.innerHTML += `
-                        <option value="${state.iso2}" ${selected}>
-                            ${state.name}
-                        </option>
-                    `;
-            });
-
-            // load city AFTER state selected
-            if (oldState) {
-                loadCities(oldState);
-            }
-        });
-
-    // CHANGE EVENT
-    stateSelect.addEventListener('change', function() {
-        loadCities(this.value);
-    });
-
-    function loadCities(stateCode) {
-
-        citySelect.innerHTML = '<option>Loading...</option>';
-
-        fetch(`/districts/${stateCode}`)
-            .then(res => res.json())
-            .then(cities => {
-
-                citySelect.innerHTML = '<option value="">Select City</option>';
-
-                cities.forEach(city => {
-
-                    const selected = oldCity == city.name ? 'selected' : '';
-
-                    citySelect.innerHTML += `
-                            <option value="${city.name}" ${selected}>
-                                ${city.name}
-                            </option>
-                        `;
-                });
-
-            });
-    }
-
-});
+    // old/edit values
+    window.selectedState = "{{ old('state', $mobilization->state) }}";
+    window.selectedDistrict = "{{ old('city', $mobilization->city) }}";
 </script>
 
+<script src="{{ asset('js/state.js') }}"></script>
 
 <script>
 document.addEventListener('change', function(e) {

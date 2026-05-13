@@ -642,11 +642,29 @@ public function show($id)
     // Remaining amount
     $remaining = $totalAmount - $totalPaid;
 
+    // Get batch students
+    $batchStudents = DB::table('batch_assignment_students')
+        ->join('mobilizations', 'mobilizations.id', '=', 'batch_assignment_students.student_id')
+        ->join('assignments', 'assignments.id', '=', 'batch_assignment_students.assignment_id')
+        ->where('batch_assignment_students.batch_id', $invoice->batch_id)
+        ->select(
+            'mobilizations.id',
+            'mobilizations.name',
+            'mobilizations.mobile',
+            'mobilizations.state',
+            'mobilizations.city',
+            'assignments.assignment_name'
+        )
+        ->orderBy('assignments.assignment_name')
+        ->orderBy('mobilizations.name')
+        ->get();
+
     return view('invoices.show', compact(
         'invoice',
         'totalAmount',
         'totalPaid',
-        'remaining'
+        'remaining',
+        'batchStudents'
     ));
 }
 
@@ -714,5 +732,27 @@ $batchData = [
     ])->setPaper('A4','portrait');
 
     return $pdf->stream('Invoice-With-Batch.pdf');
+}
+
+
+public function batchStudents($batchId)
+{
+    $students = DB::table('batch_assignment_students')
+        ->join('mobilizations', 'mobilizations.id', '=', 'batch_assignment_students.student_id')
+        ->join('assignments', 'assignments.id', '=', 'batch_assignment_students.assignment_id')
+        ->where('batch_assignment_students.batch_id', $batchId)
+        ->select(
+            'mobilizations.id',
+            'mobilizations.name',
+            'mobilizations.mobile',
+            'mobilizations.state',
+            'mobilizations.city',
+            'assignments.assignment_name'
+        )
+        ->orderBy('assignments.assignment_name')
+        ->orderBy('mobilizations.name')
+        ->get();
+
+    return response()->json($students);
 }
 }

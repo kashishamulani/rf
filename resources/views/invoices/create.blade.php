@@ -185,57 +185,84 @@ background:linear-gradient(135deg,#6366f1,#ec4899);
 
         <div class="table-wrapper">
 
-            <div class="table-title">Assignment Billing</div>
-
-            <table id="invoiceAssignmentTable" class="po-table">
-
-                <thead>
-                    <tr>
-                        <th>S.No</th>
-                        <th>Assignment</th>
-                        <th>Requirement</th>
-                        <th>Remaining</th>
-                        <th>In Batch</th>
-                        <th>Billed Qty</th>
-                    </tr>
-                </thead>
-
-                <tbody id="invoiceAssignmentBody"></tbody>
-
-            </table>
-
+            <div class="table-title"></div>Assignment Billing
         </div>
 
-        <!-- PO Table -->
+        <table id="invoiceAssignmentTable" class="po-table">
 
-        <div class="table-wrapper">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Assignment</th>
+                    <th>Requirement</th>
+                    <th>Remaining</th>
+                    <th>In Batch</th>
+                    <th>Billed Qty</th>
+                </tr>
+            </thead>
 
-            <div class="table-title">PO Item Billing</div>
+            <tbody id="invoiceAssignmentBody"></tbody>
 
-            <table id="invoicePoTable" class="po-table">
+        </table>
 
-                <thead>
-                    <tr>
-                        <th>S.No</th>
-                        <th>Item</th>
-                        <th>PO Qty</th>
-                        <th>Remaining</th>
-                        <th>Rate</th>
-                        <th>Billed Qty</th>
-                    </tr>
-                </thead>
+</div>
 
-                <tbody id="invoicePoBody"></tbody>
+<!-- PO Table -->
 
-            </table>
+<div class="table-wrapper">
 
-        </div>
+    <div class="table-title">PO Item Billing</div>
 
-        <div style="text-align:center;margin-top:20px;">
-            <button type="submit" class="btn-primary">Save Invoice</button>
-        </div>
+    <table id="invoicePoTable" class="po-table">
 
-    </form>
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>Item</th>
+                <th>PO Qty</th>
+                <th>Remaining</th>
+                <th>Rate</th>
+                <th>Billed Qty</th>
+            </tr>
+        </thead>
+
+        <tbody id="invoicePoBody"></tbody>
+
+    </table>
+
+</div>
+
+
+<!-- Students Table -->
+
+<div class="table-wrapper">
+
+    <div class="table-title">Batch Students</div>
+
+    <table id="studentTable" class="po-table">
+
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>Student Name</th>
+                <th>Assignment</th>
+                <th>Mobile</th>
+                <th>State</th>
+                <th>City</th>
+            </tr>
+        </thead>
+
+        <tbody id="studentBody"></tbody>
+
+    </table>
+
+</div>
+
+<div style="text-align:center;margin-top:20px;">
+    <button type="submit" class="btn-primary">Save Invoice</button>
+</div>
+
+</form>
 </div>
 
 <script>
@@ -250,35 +277,15 @@ const assignmentBody = document.getElementById('invoiceAssignmentBody');
 const poTable = document.getElementById('invoicePoTable');
 const poBody = document.getElementById('invoicePoBody');
 
-
-// function calculateValue(batchId, qty) {
-
-//     fetch(`/invoices/batch-info/${batchId}`)
-//         .then(res => res.json())
-//         .then(data => {
-
-//             let baseValue = parseFloat(data.total_value) || 0;
-//             let batchSize = parseFloat(data.batch_size) || 0;
-
-//             if (baseValue === 0 || batchSize === 0) {
-//                 valueField.value = '';
-//                 return;
-//             }
-
-//             let perUnit = baseValue / batchSize;
-//             let value = perUnit * qty;
-//             let gst = value * 0.18;
-//             let total = value + gst;
-
-//             valueField.value = total.toFixed(2);
-
-//         })
-
-//         .catch(() => valueField.value = '');
-
-// }
+const studentTable = document.getElementById('studentTable');
+const studentBody = document.getElementById('studentBody');
 
 
+/*
+|--------------------------------------------------------------------------
+| LOAD ASSIGNMENTS
+|--------------------------------------------------------------------------
+*/
 
 function loadAssignments(batchId) {
 
@@ -293,50 +300,66 @@ function loadAssignments(batchId) {
             assignmentTable.style.display = 'table';
 
             if (!data.length) {
-                assignmentBody.insertAdjacentHTML('beforeend', `
-<tr>
-<td colspan="6" style="text-align:center;padding:12px;">No assignment billing rows available for this batch.</td>
-</tr>
-`);
+
+                assignmentBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:12px;">
+                            No assignment billing rows available for this batch.
+                        </td>
+                    </tr>
+                `;
+
                 return;
             }
 
             data.forEach((a, i) => {
 
                 let row = `
-<tr>
-<td>${i+1}</td>
-<td>${a.assignment_name}</td>
-<td>${a.requirement}</td>
-<td>${a.remaining}</td>
-<td>${a.build}</td>
-<td>
-<input type="number"
-name="billed_assignments[${a.id}]"
-min="0"
-max="${a.build}"
-class="form-input">
-</td>
-</tr>
-`;
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${a.assignment_name ?? '-'}</td>
+                        <td>${a.requirement ?? 0}</td>
+                        <td>${a.remaining ?? 0}</td>
+                        <td>${a.build ?? 0}</td>
+                        <td>
+                            <input type="number"
+                                name="billed_assignments[${a.id}]"
+                                min="0"
+                                max="${a.build ?? 0}"
+                                class="form-input">
+                        </td>
+                    </tr>
+                `;
 
                 assignmentBody.insertAdjacentHTML('beforeend', row);
 
             });
 
         })
-        .catch(() => {
+        .catch(error => {
+
+            console.error('Assignment Error:', error);
+
             assignmentBody.innerHTML = `
-<tr>
-<td colspan="6" style="text-align:center;padding:12px;">Unable to load assignment billing data.</td>
-</tr>
-`;
+                <tr>
+                    <td colspan="6" style="text-align:center;padding:12px;color:red;">
+                        Unable to load assignment billing data.
+                    </td>
+                </tr>
+            `;
+
             assignmentTable.style.display = 'table';
+
         });
 
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| LOAD PO ITEMS
+|--------------------------------------------------------------------------
+*/
 
 function loadPoItems(poId) {
 
@@ -348,24 +371,30 @@ function loadPoItems(poId) {
         return;
     }
 
-    console.log('Loading PO items for PO ID:', poId); // Debug log
-
     fetch(`/po/${poId}/items`)
         .then(res => {
+
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
+
             return res.json();
+
         })
         .then(items => {
-            console.log('PO items received:', items); // Debug log
+
+            poBody.innerHTML = '';
 
             if (!items.length) {
+
                 poBody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align:center;padding:12px;">No PO items found for this batch.</td>
+                        <td colspan="6" style="text-align:center;padding:12px;">
+                            No PO items found for this batch.
+                        </td>
                     </tr>
                 `;
+
                 poTable.style.display = 'table';
                 return;
             }
@@ -373,59 +402,186 @@ function loadPoItems(poId) {
             poTable.style.display = 'table';
 
             items.forEach((item, i) => {
-                let remaining = item.remaining_qty ?? (item.quantity - (item.used_quantity || 0));
-                
+
+                let remaining = item.remaining_qty ?? 
+                    ((item.quantity || 0) - (item.used_quantity || 0));
+
                 let row = `
                     <tr>
-                        <td>${i+1}</td>
+                        <td>${i + 1}</td>
                         <td>${item.item || item.item_name || 'N/A'}</td>
                         <td>${item.quantity || 0}</td>
                         <td>${remaining}</td>
                         <td>${item.value || 0}</td>
                         <td>
                             <input type="number"
-                            name="billed_po_items[${item.id}]"
-                            min="0"
-                            max="${remaining}"
-                            class="form-input billed-po"
-                            oninput="updateBatchValue()">
+                                name="billed_po_items[${item.id}]"
+                                min="0"
+                                max="${remaining}"
+                                class="form-input billed-po"
+                                oninput="updateBatchValue()">
                         </td>
                     </tr>
                 `;
+
                 poBody.insertAdjacentHTML('beforeend', row);
+
             });
+
         })
         .catch(error => {
-            console.error('Error loading PO items:', error);
+
+            console.error('PO Item Error:', error);
+
             poBody.innerHTML = `
                 <tr>
                     <td colspan="6" style="text-align:center;padding:12px;color:red;">
-                        Error loading PO items: ${error.message}
+                        Error loading PO items.
                     </td>
                 </tr>
             `;
+
             poTable.style.display = 'table';
+
         });
+
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| LOAD STUDENTS
+|--------------------------------------------------------------------------
+*/
+
+function loadStudents(batchId) {
+
+    studentBody.innerHTML = '';
+    studentTable.style.display = 'none';
+
+    fetch(`/invoices/batch-students/${batchId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            studentBody.innerHTML = '';
+            studentTable.style.display = 'table';
+
+            if (!data.length) {
+
+                studentBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:12px;">
+                            No students found in this batch.
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+            data.forEach((student, i) => {
+
+                let row = `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${student.name ?? '-'}</td>
+                        <td>${student.assignment_name ?? '-'}</td>
+                        <td>${student.mobile ?? '-'}</td>
+                        <td>${student.state ?? '-'}</td>
+                        <td>${student.city ?? '-'}</td>
+                    </tr>
+                `;
+
+                studentBody.insertAdjacentHTML('beforeend', row);
+
+            });
+
+        })
+        .catch(error => {
+
+            console.error('Student Error:', error);
+
+            studentBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center;color:red;padding:12px;">
+                        Failed to load students.
+                    </td>
+                </tr>
+            `;
+
+            studentTable.style.display = 'table';
+
+        });
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE BATCH VALUE
+|--------------------------------------------------------------------------
+*/
+
+function updateBatchValue() {
+
+    let subtotal = 0;
+
+    document.querySelectorAll('#invoicePoBody tr').forEach(row => {
+
+        let qtyInput = row.querySelector('input');
+
+        if (!qtyInput) return;
+
+        let rate = parseFloat(row.children[4].innerText) || 0;
+        let qty = parseFloat(qtyInput.value) || 0;
+
+        subtotal += qty * rate;
+
+    });
+
+    let gst = subtotal * 0.18;
+    let total = subtotal + gst;
+
+    valueField.value = total.toFixed(2);
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| BATCH CHANGE
+|--------------------------------------------------------------------------
+*/
 
 batchSelect.addEventListener('change', () => {
 
     let selected = batchSelect.options[batchSelect.selectedIndex];
 
+    /*
+    |--------------------------------------------------------------------------
+    | RESET
+    |--------------------------------------------------------------------------
+    */
+
     if (!selected.value) {
+
         batchSizeInput.value = '';
         batchQuantityHidden.value = '';
         valueField.value = '';
+
         assignmentBody.innerHTML = '';
         poBody.innerHTML = '';
+        studentBody.innerHTML = '';
+
         assignmentTable.style.display = 'none';
         poTable.style.display = 'none';
+        studentTable.style.display = 'none';
+
         return;
     }
 
     let batchId = selected.value;
-    let poId = selected.getAttribute('data-po'); // Get PO ID from data attribute
+    let poId = selected.getAttribute('data-po');
 
     fetch(`/invoices/batch-info/${batchId}`)
         .then(res => res.json())
@@ -437,50 +593,46 @@ batchSelect.addEventListener('change', () => {
             batchSizeInput.value = batchSize;
             batchQuantityHidden.value = remaining;
 
-            // Load assignments
+            /*
+            |--------------------------------------------------------------------------
+            | LOAD TABLES
+            |--------------------------------------------------------------------------
+            */
+
             loadAssignments(batchId);
-            
-            // Load PO items - use poId from data attribute or from API response
+
+            loadStudents(batchId);
+
             const finalPoId = poId || data.po_id;
+
             if (finalPoId) {
+
                 loadPoItems(finalPoId);
+
             } else {
+
                 console.error('No PO ID found for this batch');
+
                 poTable.style.display = 'none';
+
             }
 
         })
         .catch(error => {
-            console.error('Error loading batch info:', error);
+
+            console.error('Batch Info Error:', error);
+
             assignmentBody.innerHTML = '';
             poBody.innerHTML = '';
+            studentBody.innerHTML = '';
+
             assignmentTable.style.display = 'none';
             poTable.style.display = 'none';
+            studentTable.style.display = 'none';
+
         });
 
 });
-
-
-function updateBatchValue(){
-
-let subtotal = 0;
-
-document.querySelectorAll('#invoicePoBody tr').forEach(row => {
-
-let qtyInput = row.querySelector('input');
-let rate = parseFloat(row.children[4].innerText) || 0;
-let qty = parseFloat(qtyInput.value) || 0;
-
-subtotal += qty * rate;
-
-});
-
-let gst = subtotal * 0.18;
-let total = subtotal + gst;
-
-valueField.value = total.toFixed(2);
-
-}
 </script>
 
 @endsection

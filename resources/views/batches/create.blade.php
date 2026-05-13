@@ -241,17 +241,20 @@
 
                 <div class="form-group">
                     <label class="form-label">State<span style="color:#ef4444;">*</span></label>
-                    <select name="state" id="stateSelect" class="form-select">
+                    <select name="state" id="filterState" class="form-select">
                         <option value="">-- Select State --</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">City<span style="color:#ef4444;">*</span></label>
-                    <select name="district" id="districtSelect" class="form-select">
+                    <select name="district" id="filterDistrict" class="form-select">
                         <option value="">-- Select City --</option>
                     </select>
                 </div>
+
+
+
             </div>
 
 
@@ -409,12 +412,21 @@
         </form>
     </div>
 
-    <script>
+<script>
+    window.selectedState = "{{ old('state') }}";
+    window.selectedDistrict = "{{ old('district') }}";
+</script>
+
+    <script src="{{ asset('js/state.js') }}"></script>
+
+<script>
+// ================= ASSIGNMENTS DROPDOWN =================
 const toggle = document.getElementById('assignmentsToggle');
 const options = document.getElementById('assignmentsOptions');
 const selectedDiv = document.getElementById('selectedAssignments');
 
-toggle.addEventListener('click', () => {
+toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
     options.style.display = options.style.display === 'block' ? 'none' : 'block';
 });
 
@@ -424,80 +436,33 @@ document.addEventListener('click', function(e) {
     }
 });
 
-document.querySelectorAll('.assignment-check').forEach(cb => {
-    cb.addEventListener('change', function() {
-
-        const selected = Array.from(document.querySelectorAll('.assignment-check:checked'))
-            .map(i => i.dataset.name);
-
-        selectedDiv.textContent = selected.length ?
-            `Selected: ${selected.join(', ')}` :
-            '';
-    });
-});
-// ================= STATE / DISTRICT =================
-const stateSelect = document.getElementById('stateSelect');
-const districtSelect = document.getElementById('districtSelect');
-
-// Load States
-fetch('/states')
-    .then(res => {
-        if (!res.ok) {
-            throw new Error('Failed to fetch states: ' + res.status);
-        }
-        return res.json();
-    })
-    .then(states => {
-        console.log('States:', states);
-        states.forEach(state => {
-            stateSelect.innerHTML += `<option value="${state.iso2}">${state.name}</option>`;
-        });
-    })
-    .catch(error => {
-        console.error('Error loading states:', error);
-        alert('Failed to load states. Please check console for details.');
-    });
-
-// Load Districts
-stateSelect.addEventListener('change', function() {
-    const stateCode = this.value;
-    districtSelect.innerHTML = `<option value="">Loading...</option>`;
-
-    if (!stateCode) return;
-
-    fetch(`/districts/${stateCode}`)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error('Failed to fetch districts: ' + res.status);
-            }
-            return res.json();
-        })
-        .then(districts => {
-            console.log('Districts for', stateCode, ':', districts);
-            districtSelect.innerHTML = `<option value="">-- Select City --</option>`;
-            districts.forEach(d => {
-                districtSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
-            });
-        })
-        .catch(error => {
-            console.error('Error loading districts:', error);
-            districtSelect.innerHTML = `<option value="">-- Select City --</option>`;
-            alert('Failed to load districts. Please check console for details.');
-        });
+options.addEventListener('click', function(e) {
+    e.stopPropagation();
 });
 
-
-
+document.getElementById('closeAssignments').addEventListener('click', function(e) {
+    e.stopPropagation();
+    options.style.display = 'none';
+});
 
 // ================= ASSIGNMENT TABLE =================
+// 🔑 Track built totals per assignment fetched from server
+const assignmentBuiltMap = {};
+
 const assignmentTable = document.getElementById('assignmentTable');
 const assignmentTbody = document.getElementById('assignmentTableBody');
-const batchSizeInput = document.querySelector('input[name="batch_size"]');
 
-function updateAssignmentTable() {
+function updateSelectedText() {
+    const selected = Array.from(document.querySelectorAll('.assignment-check:checked'))
+        .map(i => i.dataset.name);
+    selectedDiv.textContent = selected.length ? `Selected: ${selected.join(', ')}` : '';
+}
+
+async function updateAssignmentTable() {
+    updateSelectedText();
     assignmentTbody.innerHTML = '';
 
-    const selected = document.querySelectorAll('.assignment-check:checked');
+    const selected = Array.from(document.querySelectorAll('.assignment-check:checked'));
 
     if (!selected.length) {
         assignmentTable.style.display = 'none';
@@ -506,88 +471,127 @@ function updateAssignmentTable() {
 
     assignmentTable.style.display = 'table';
 
+    // Show loading rows first
     selected.forEach((cb, index) => {
-
-        const id = cb.dataset.id;
         const name = cb.dataset.name;
-
-        fetch(`/assignment/${id}/remaining`)
-            .then(res => res.json())
-            .then(data => {
-
-                const row = `
-            <tr>
+        assignmentTbody.insertAdjacentHTML('beforeend', `
+            <tr id="row-${cb.dataset.id}">
                 <td>${index + 1}</td>
                 <td>${name}</td>
-                <td>${data.requirement}</td>
-                <td>${data.remaining}</td>
+                <td colspan="3" style="color:#6b7280; font-style:italic;">Loading...</td>
+            </tr>
+        `);
+    });
+
+    // Fetch built totals for each assignment from server (only what we can't know client-side)
+    const promises = selected.map((cb, index) => {
+        const id = cb.dataset.id;
+        const name = cb.dataset.name;
+        // requirement is already in data attribute — no need to fetch it!
+        const requirement = parseInt(cb.dataset.requirement) || 0;
+
+        // Check cache first
+        if (assignmentBuiltMap[id] !== undefined) {
+            return Promise.resolve({
+                index, id, name,
+                requirement,
+                built: assignmentBuiltMap[id]
+            });
+        }
+
+        return fetch(`/assignment/${id}/remaining`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            // Cache it
+            assignmentBuiltMap[id] = data.built ?? 0;
+            return {
+                index, id, name,
+                requirement,
+                built: data.built ?? 0
+            };
+        })
+        .catch(err => {
+            console.error(`Failed to fetch remaining for assignment ${id}:`, err);
+            return { index, id, name, requirement, built: 0 };
+        });
+    });
+
+    const results = await Promise.all(promises);
+
+    // Replace loading rows with real data
+    results.forEach(({ index, id, name, requirement, built }) => {
+        const remaining = Math.max(requirement - built, 0);
+
+        const existingRow = document.getElementById(`row-${id}`);
+        if (existingRow) {
+            existingRow.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${name}</td>
+                <td>${requirement}</td>
+                <td class="remaining-cell" id="remaining-${id}">${remaining}</td>
                 <td>
                     <input type="number"
                         name="builds[${id}]"
                         min="0"
-                        max="${data.remaining}"
+                        max="${remaining}"
+                        value=""
                         class="form-input build-input"
-                        data-max="${data.remaining}">
+                        data-id="${id}"
+                        data-max="${remaining}"
+                        data-requirement="${requirement}">
                 </td>
-            </tr>
             `;
-
-                assignmentTbody.insertAdjacentHTML('beforeend', row);
-
-                attachBuildValidation();
-            });
+        }
     });
+
+    attachBuildValidation();
 }
 
 function attachBuildValidation() {
+    // Remove old listeners by replacing nodes
+    document.querySelectorAll('.build-input').forEach(input => {
+        const clone = input.cloneNode(true);
+        input.replaceWith(clone);
+    });
 
     document.querySelectorAll('.build-input').forEach(input => {
-
-        input.addEventListener('input', function() {
-
-            let max = parseInt(this.dataset.max);
+        input.addEventListener('input', function () {
+            const max = parseInt(this.dataset.max) || 0;
             let val = parseInt(this.value) || 0;
 
+            if (val < 0) {
+                this.value = 0;
+                val = 0;
+            }
+
             if (val > max) {
-                alert('Build cannot exceed remaining requirement');
+                alert(`Build cannot exceed remaining requirement (${max})`);
                 this.value = max;
                 val = max;
             }
 
-            const row = this.closest('tr');
-
-            const requirement = parseInt(row.children[2].innerText);
-
-            const newRemaining = max - val;
-
-            row.children[3].innerText = newRemaining;
-
+            const id = this.dataset.id;
+            const remainingCell = document.getElementById(`remaining-${id}`);
+            if (remainingCell) {
+                remainingCell.innerText = max - val;
+            }
         });
-
     });
-
 }
 
-
-
-// Trigger table update when checkbox changes
+// Attach listener to all checkboxes
 document.querySelectorAll('.assignment-check').forEach(cb => {
     cb.addEventListener('change', updateAssignmentTable);
 });
-const closeBtn = document.getElementById('closeAssignments');
-
-// STOP CLICK PROPAGATION INSIDE DROPDOWN
-options.addEventListener('click', function(e) {
-    e.stopPropagation();
-});
-
-// CLOSE BUTTON
-closeBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    options.style.display = 'none';
-});
-    </script>
-
+</script>
 
 
 

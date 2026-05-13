@@ -47,6 +47,8 @@ public function hr()
     return $this->belongsTo(Hr::class);
 }
 
+
+
 public function statusHistory()
 {
     return $this->hasMany(AssignmentStatus::class)->latest();

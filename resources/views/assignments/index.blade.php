@@ -8,76 +8,137 @@ use Illuminate\Support\Str;
 
 
 <style>
-    /* INPUTS */
-    .f-input {
-        width: 100%;
-        height: 36px;
-        padding: 6px 10px;
-        font-size: 13px;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        background: #fff;
-        color: #111827;
-    }
+/* INPUTS */
+.f-input {
+    width: 100%;
+    height: 36px;
+    padding: 6px 10px;
+    font-size: 13px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+    color: #111827;
+}
 
-    /* FIX SELECT TEXT ISSUE */
-    select,
-    option {
-        color: #111827 !important;
-        background: #fff !important;
-    }
+/* FIX SELECT TEXT ISSUE */
+select,
+option {
+    color: #111827 !important;
+    background: #fff !important;
+}
 
-    /* BUTTONS */
-    .btn-primary {
-        padding: 6px 14px;
-        background: #2563eb;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        font-size: 13px;
-        cursor: pointer;
-    }
+/* BUTTONS */
+.btn-primary {
+    padding: 6px 14px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
 
-    .btn-light {
-        padding: 6px 14px;
-        background: #e5e7eb;
-        color: #111;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 13px;
-    }
+.btn-light {
+    padding: 6px 14px;
+    background: #e5e7eb;
+    color: #111;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+}
 
-    /* FILTER GRID */
-    .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 10px;
-    }
+/* FILTER GRID */
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+}
 
-    /* TABLE */
-    .table-wrap {
-        width: 100%;
-        overflow-x: auto;
-    }
+/* TABLE */
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
 
-    table {
-        width: 100%;
-    }
+table {
+    width: 100%;
+}
+
+th,
+td {
+    padding: 8px 6px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* FIX WIDTHS */
+th:nth-child(1) {
+    width: 30px;
+}
+
+th:nth-child(2) {
+    width: 80px;
+}
+
+th:nth-child(3) {
+    width: 120px;
+}
+
+th:nth-child(4) {
+    width: 100px;
+}
+
+th:nth-child(5) {
+    width: 50px;
+}
+
+th:nth-child(6) {
+    width: 60px;
+}
+
+th:nth-child(7) {
+    width: 60px;
+}
+
+th:nth-child(8) {
+    width: 60px;
+}
+
+th:nth-child(9) {
+    width: 50px;
+}
+
+th:nth-child(10) {
+    width: 60px;
+}
+
+th:nth-child(11) {
+    width: 60px;
+}
+
+th:nth-child(12) {
+    width: 50px;
+}
+
+th:nth-child(13) {
+    width: 50px;
+}
+
+/* MID SCREEN COMPACT */
+@media (max-width: 1280px) {
 
     th,
     td {
-        padding: 8px 6px;
-        font-size: 12px;
-        white-space: nowrap;
+        padding: 4px !important;
+        font-size: 11px !important;
     }
 
-    /* FIX WIDTHS */
     th:nth-child(1) {
-        width: 30px;
+        width: 20px;
     }
 
     th:nth-child(2) {
-        width: 80px;
+        width: 60px;
     }
 
     th:nth-child(3) {
@@ -85,27 +146,27 @@ use Illuminate\Support\Str;
     }
 
     th:nth-child(4) {
-        width: 100px;
+        width: 80px;
     }
 
     th:nth-child(5) {
-        width: 50px;
+        width: 40px;
     }
 
     th:nth-child(6) {
-        width: 60px;
+        width: 40px;
     }
 
     th:nth-child(7) {
-        width: 60px;
+        width: 40px;
     }
 
     th:nth-child(8) {
-        width: 60px;
+        width: 40px;
     }
 
     th:nth-child(9) {
-        width: 50px;
+        width: 40px;
     }
 
     th:nth-child(10) {
@@ -117,55 +178,34 @@ use Illuminate\Support\Str;
     }
 
     th:nth-child(12) {
-        width: 50px;
+        width: 30px;
     }
 
     th:nth-child(13) {
         width: 50px;
     }
 
-    /* MID SCREEN COMPACT */
-    @media (max-width: 1280px) {
-        th, td {
-            padding: 4px !important;
-            font-size: 11px !important;
-        }
+    .f-input {
+        height: 30px;
+        padding: 4px 6px;
+        font-size: 12px;
+    }
+}
 
-        th:nth-child(1) { width: 20px; }
-        th:nth-child(2) { width: 60px; }
-        th:nth-child(3) { width: 120px; }
-        th:nth-child(4) { width: 80px; }
-        th:nth-child(5) { width: 40px; }
-        th:nth-child(6) { width: 40px; }
-        th:nth-child(7) { width: 40px; }
-        th:nth-child(8) { width: 40px; }
-        th:nth-child(9) { width: 40px; }
-        th:nth-child(10) { width: 60px; }
-        th:nth-child(11) { width: 60px; }
-        th:nth-child(12) { width: 30px; }
-        th:nth-child(13) { width: 50px; }
-
-        .f-input {
-            height: 30px;
-            padding: 4px 6px;
-            font-size: 12px;
-        }
+/* MOBILE */
+@media (max-width:768px) {
+    .filter-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
-    /* MOBILE */
-    @media (max-width:768px) {
-        .filter-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        table {
-            min-width: 100%;
-        }
-
-        .f-input {
-            font-size: 12px;
-        }
+    table {
+        min-width: 100%;
     }
+
+    .f-input {
+        font-size: 12px;
+    }
+}
 </style>
 {{-- ================= HEADER ================= --}}
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -203,45 +243,124 @@ margin-bottom:14px;
 box-shadow:0 4px 12px rgba(0,0,0,0.05);
 ">
 
-    <div class="filter-grid">
+   <div class="filter-grid">
 
-        <input type="date" name="from_date" value="{{ request('from_date') }}" class="f-input">
-        <input type="date" name="to_date" value="{{ request('to_date') }}" class="f-input">
-        <input type="date" name="deadline_from" value="{{ request('deadline_from') }}" class="f-input">
+    {{-- FROM DATE --}}
+    <div class="filter-field">
+        <label class="f-label">From Date</label>
+
+        <input type="date"
+               name="from_date"
+               value="{{ request('from_date') }}"
+               class="f-input">
+    </div>
+
+    {{-- TO DATE --}}
+    <div class="filter-field">
+        <label class="f-label">To Date</label>
+
+        <input type="date"
+               name="to_date"
+               value="{{ request('to_date') }}"
+               class="f-input">
+    </div>
+
+    {{-- DEADLINE --}}
+    <div class="filter-field">
+        <label class="f-label">Deadline From</label>
+
+        <input type="date"
+               name="deadline_from"
+               value="{{ request('deadline_from') }}"
+               class="f-input">
+    </div>
+
+    {{-- STATUS --}}
+    <div class="filter-field">
+        <label class="f-label">&nbsp;</label>
 
         <select name="status" class="f-input">
             <option value="">Status</option>
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
+
+            <option value="Pending"
+                {{ request('status') == 'Pending' ? 'selected' : '' }}>
+                Pending
+            </option>
+
+            <option value="In Progress"
+                {{ request('status') == 'In Progress' ? 'selected' : '' }}>
+                In Progress
+            </option>
+
+            <option value="Completed"
+                {{ request('status') == 'Completed' ? 'selected' : '' }}>
+                Completed
+            </option>
+
+            <option value="Cancelled"
+                {{ request('status') == 'Cancelled' ? 'selected' : '' }}>
+                Cancelled
+            </option>
         </select>
+    </div>
+
+    {{-- STATE --}}
+    <div class="filter-field">
+        <label class="f-label">&nbsp;</label>
 
         <select name="state" id="state" class="f-input">
-            <option value="">All States</option>
+            <option value="">Select State</option>
         </select>
+    </div>
+
+    {{-- DISTRICT --}}
+    <div class="filter-field">
+        <label class="f-label">&nbsp;</label>
 
         <select name="district" id="district" class="f-input">
             <option value="">All Districts</option>
         </select>
+    </div>
+
+    {{-- BILLING --}}
+    <div class="filter-field">
+        <label class="f-label">&nbsp;</label>
 
         <select name="billing_status" class="f-input">
             <option value="">Billing</option>
-            <option value="not_billed">Not Billed</option>
+
+            <option value="not_billed"
+                {{ request('billing_status') == 'not_billed' ? 'selected' : '' }}>
+                Not Billed
+            </option>
         </select>
+    </div>
+
+    {{-- BATCH --}}
+    <div class="filter-field">
+        <label class="f-label">&nbsp;</label>
 
         <select name="in_batch" class="f-input">
             <option value="">Batch</option>
-            <option value="0">Not in batch</option>
+
+            <option value="0"
+                {{ request('in_batch') == '0' ? 'selected' : '' }}>
+                Not in batch
+            </option>
         </select>
-
     </div>
 
-    <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px;">
-        <a href="{{ route('assignments.index') }}" class="btn-light">Reset</a>
-        <button type="submit" class="btn-primary">Apply</button>
-    </div>
+</div>
 
+<div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px;">
+    <a href="{{ route('assignments.index') }}" class="btn-light">
+        Reset
+    </a>
+
+    <button type="submit" class="btn-primary">
+        Apply
+    </button>
+</div>
 </form>
 {{-- ================= TABLE ================= --}}
 <div class="table-wrap">
@@ -256,11 +375,12 @@ box-shadow:0 4px 12px rgba(0,0,0,0.05);
                 <th style="width:140px;">Location</th> <!-- smaller -->
                 <th>Req.</th>
                 <th style="text-align:center;">Regs</th>
+                <!-- <th style="text-align:center;">
+                    Batch Assigned
+                </th> -->
                 <th>In Batch</th>
-                <th>Billed</th> <!-- NEW -->
-                <th>Left</th> <!-- NEW -->
-
-
+                <th>Billed</th>
+                <th>Left</th>
                 <th>Deadline</th>
                 <th>Status</th>
                 <th style="text-align:center;">View</th>
@@ -271,9 +391,16 @@ box-shadow:0 4px 12px rgba(0,0,0,0.05);
 
             @php
             $totalRequirement = 0;
+            $totalRegistered = 0;
+            $totalBatchAssigned = 0;
             $totalBuild = 0;
+
             $totalLeft = 0;
             $totalBilled = 0;
+
+            $totalRegistered += $assignment->mobilizations_count ?? 0;
+
+            $totalBatchAssigned += $assignment->batch_assigned_count ?? 0;
             @endphp
             @forelse($assignments as $assignment)
             <tr style="border-bottom:1px solid #f1f5f9;">
@@ -297,8 +424,24 @@ box-shadow:0 4px 12px rgba(0,0,0,0.05);
                 </td>
                 <!-- Location -->
                 <td style="color:#6b7280;width:140px;font-size:13px;">
-                    {{ Str::limit($assignment->state . ', ' . $assignment->district, 20) }}<br>
-                    <small>{{ Str::limit($assignment->location, 20) }}</small>
+
+                    @php
+                    $locationText = implode(', ', array_filter([
+                    optional($assignment->stateData)->name,
+                    $assignment->district
+                    ]));
+                    @endphp
+
+                    <div title="{{ $locationText }}">
+                        {{ Str::limit($locationText, 20) }}
+                    </div>
+
+                    @if($assignment->location)
+                    <small title="{{ $assignment->location }}">
+                        {{ Str::limit($assignment->location, 20) }}
+                    </small>
+                    @endif
+
                 </td>
                 <!-- requirements -->
 
@@ -316,12 +459,38 @@ box-shadow:0 4px 12px rgba(0,0,0,0.05);
                     </a>
                 </td>
 
+                <!-- <td style="text-align:center;">
+                    <span style="
+background:#ede9fe;color:#5b21b6;padding:6px 12px;border-radius:999px;font-weight:700;display:inline-block;">
+                        <i class="fa-solid fa-layer-group"></i>
+                        {{ $assignment->batch_assigned_count ?? 0 }}
+                    </span>
+                </td> -->
+
                 <!-- In Batch -->
 
-                <td>
+                <!-- <td>
                     <span style="font-weight:700;">
                         {{ $assignment->total_build ?? 0 }}
                     </span>
+                </td> -->
+                <!-- In Batch -->
+                <td>
+                    @php
+                    $manualBuild = $assignment->total_build ?? 0;
+                    $actualCount = $assignment->actual_in_batch ?? 0;
+                    $display = max($manualBuild, $actualCount);
+                    @endphp
+
+                    <!-- <span style="font-weight:700;">{{ $display }}</span> -->
+                    <span style="font-weight:700;">{{ $actualCount }}</span>
+
+                    @if($actualCount > 0)
+                    <br>
+                    <!-- <small style="color:#16a34a; font-size:11px;">
+            <i class="fa-solid fa-users"></i> {{ $actualCount }} actual
+        </small> -->
+                    @endif
                 </td>
 
 
@@ -413,21 +582,12 @@ box-shadow:0 4px 12px rgba(0,0,0,0.05);
 
             <tr style="background:#f9fafb;font-weight:700;border-top:2px solid #e5e7eb;">
                 <td colspan="4" style="padding:6px;text-align:right;">TOTAL</td>
-
                 <td>{{ $totalRequirement }}</td>
-
+                <td>{{ $totalRegs }}</td>
+                <td style="color:#5b21b6;">{{ $totalBatchAssigned }}</td>
                 <td>{{ $totalBuild }}</td>
-
-                <td style="color:#f59e0b;">
-                    {{ $totalLeft }}
-                </td>
-
-                <td></td>
-
-                <td style="color:#22c55e;">
-                    {{ $totalBilled }}
-                </td>
-
+                <td style="color:#22c55e;">{{ $totalBilled }}</td>
+                <td style="color:#f59e0b;">{{ $totalLeft }}</td>
                 <td colspan="4"></td>
             </tr>
         </tbody>
@@ -567,144 +727,74 @@ z-index:2000;
     </div>
 </div>
 
-{{-- ================= JS ================= --}}
 <script>
-    const selectedState = "{{ request('state') }}";
-    const selectedDistrict = "{{ request('district') }}";
+function populateDistricts(cities, isInitialLoad) {
+    const districtSelect = document.getElementById('district');
 
-    let statesCache = [];
-    let districtsCache = {};
+    districtSelect.innerHTML = '<option value="">All Districts</option>';
 
-    function loadStates() {
-        fetch('/states')
-            .then(res => res.json())
-            .then(states => {
-                statesCache = states;
-                const stateSelect = document.getElementById('state');
-                stateSelect.innerHTML = '<option value="">All States</option>';
-                states.forEach(state => {
-                    const option = document.createElement('option');
-                    option.value = state.name;
-                    option.textContent = state.name;
-                    option.setAttribute('data-code', state.iso2);
+    cities.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city.name;
+        option.textContent = city.name;
 
-                    if (selectedState && selectedState === state.name) {
-                        option.selected = true;
-                    }
-
-                    stateSelect.appendChild(option);
-                });
-
-
-                if (selectedState) {
-                    const selectedStateObj = states.find(s => s.name === selectedState);
-                    if (selectedStateObj) {
-                        loadDistricts(selectedStateObj.iso2, true);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error loading states:', error);
-            });
-    }
-
-
-    function loadDistricts(stateCode = null, isInitialLoad = false) {
-        const stateSelect = document.getElementById('state');
-        const districtSelect = document.getElementById('district');
-
-        if (!stateCode) {
-            const selectedOption = stateSelect.options[stateSelect.selectedIndex];
-            stateCode = selectedOption ? selectedOption.getAttribute('data-code') : null;
+        // Check if this district should be selected
+        if (selectedDistrict && selectedDistrict === city.name && isInitialLoad) {
+            option.selected = true;
         }
 
-        // ✅ ALWAYS show default first
-        districtSelect.innerHTML = '<option value="">All Districts</option>';
-
-        if (!stateCode) return;
-
-        fetch(`/districts/${stateCode}`)
-            .then(res => res.json())
-            .then(cities => {
-                cities.forEach(city => {
-                    const option = document.createElement('option');
-                    option.value = city.name;
-                    option.textContent = city.name;
-                    districtSelect.appendChild(option);
-                });
-            })
-            .catch(() => {
-                districtSelect.innerHTML = '<option value="">All Districts</option>';
-            });
-    }
-
-    function populateDistricts(cities, isInitialLoad) {
-        const districtSelect = document.getElementById('district');
-
-        districtSelect.innerHTML = '<option value="">All Districts</option>';
-
-        cities.forEach(city => {
-            const option = document.createElement('option');
-            option.value = city.name;
-            option.textContent = city.name;
-
-            // Check if this district should be selected
-            if (selectedDistrict && selectedDistrict === city.name && isInitialLoad) {
-                option.selected = true;
-            }
-
-            districtSelect.appendChild(option);
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        loadStates();
-        document.getElementById('state').addEventListener('change', function() {
-            loadDistricts();
-        });
+        districtSelect.appendChild(option);
     });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    document.getElementById('state').addEventListener('change', function() {
+
+    });
+});
 
 
-    function closeBatchModal() {
-        document.getElementById('batchModal').style.display = 'none';
-    }
+function closeBatchModal() {
+    document.getElementById('batchModal').style.display = 'none';
+}
 
-    function saveBatches() {
-        const ids = [...document.querySelectorAll('#batchList input:checked')]
-            .map(cb => parseInt(cb.value));
+function saveBatches() {
+    const ids = [...document.querySelectorAll('#batchList input:checked')]
+        .map(cb => parseInt(cb.value));
 
-        fetch(`/assignments/${currentAssignmentId}/batches`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    batch_ids: ids
-                })
+    fetch(`/assignments/${currentAssignmentId}/batches`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                batch_ids: ids
             })
-            .then(res => res.json())
-            .then(data => {
-                alert('✅ Batches assigned successfully!');
-                closeBatchModal();
-                location.reload();
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Something went wrong');
-            });
-    }
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert('✅ Batches assigned successfully!');
+            closeBatchModal();
+            location.reload();
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Something went wrong');
+        });
+}
 
-    let currentAssignmentId = null;
+let currentAssignmentId = null;
 
-    function openRequestsModal(assignmentId) {
-        currentAssignmentId = assignmentId;
+function openRequestsModal(assignmentId) {
+    currentAssignmentId = assignmentId;
 
-        const modal = document.getElementById('registerModal');
-        const tbody = document.querySelector('#registerTable tbody');
-        const batchSelect = document.getElementById('batchSelect');
+    const modal = document.getElementById('registerModal');
+    const tbody = document.querySelector('#registerTable tbody');
+    const batchSelect = document.getElementById('batchSelect');
 
-        tbody.innerHTML = `
+    tbody.innerHTML = `
                 <tr>
                     <td colspan="7" style="text-align:center;padding:10px;">
                         Loading...
@@ -712,51 +802,51 @@ z-index:2000;
                 </tr>
             `;
 
-        modal.style.display = 'flex';
+    modal.style.display = 'flex';
 
-        fetch(`/api/assignment-batches/${assignmentId}`, {
-                credentials: 'same-origin'
-            })
-            .then(res => res.json())
-            .then(data => {
-                batchSelect.innerHTML = `<option value="">Select Batch</option>`;
+    fetch(`/api/assignment-batches/${assignmentId}`, {
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            batchSelect.innerHTML = `<option value="">Select Batch</option>`;
 
-                if (data.batches && data.batches.length) {
-                    data.batches.forEach(batch => {
-                        batchSelect.innerHTML += `
+            if (data.batches && data.batches.length) {
+                data.batches.forEach(batch => {
+                    batchSelect.innerHTML += `
                                 <option value="${batch.id}">
                                     ${batch.batch_code ?? 'Batch #' + batch.id}
                                 </option>
                             `;
-                    });
-                }
-            })
-            .catch(err => {
-                console.error('Failed to load batches', err);
-                batchSelect.innerHTML = `<option value="">Unable to load batches</option>`;
-            });
+                });
+            }
+        })
+        .catch(err => {
+            console.error('Failed to load batches', err);
+            batchSelect.innerHTML = `<option value="">Unable to load batches</option>`;
+        });
 
-        fetch(`/assignments/${assignmentId}/mobilizations`, {
-                credentials: 'same-origin'
-            })
-            .then(res => res.json())
-            .then(data => {
-                tbody.innerHTML = '';
+    fetch(`/assignments/${assignmentId}/mobilizations`, {
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            tbody.innerHTML = '';
 
-                if (!data.length) {
-                    tbody.innerHTML = `
+            if (!data.length) {
+                tbody.innerHTML = `
                             <tr>
                                 <td colspan="7" style="text-align:center;padding:10px;">
                                     No candidates found
                                 </td>
                             </tr>
                         `;
-                    return;
-                }
+                return;
+            }
 
-                data.forEach((candidate, index) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
+            data.forEach((candidate, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
                             <td style="padding:6px; border:1px solid #e5e7eb;">
                                 <input type="checkbox" class="candidate-checkbox" value="${candidate.id}">
                             </td>
@@ -767,125 +857,137 @@ z-index:2000;
                             <td style="padding:6px; border:1px solid #e5e7eb;">${candidate.district ?? '-'}</td>
                             <td style="padding:6px; border:1px solid #e5e7eb;">${candidate.state ?? '-'}</td>
                         `;
-                    tbody.appendChild(tr);
-                });
+                tbody.appendChild(tr);
             });
+        });
+}
+
+function assignSelectedCandidates() {
+    const selected = [...document.querySelectorAll('.candidate-checkbox:checked')]
+        .map(cb => cb.value);
+
+    const batchId = document.getElementById('batchSelect').value;
+
+    if (!batchId) {
+        alert("Please select batch");
+        return;
     }
 
-    function assignSelectedCandidates() {
-        const selected = [...document.querySelectorAll('.candidate-checkbox:checked')]
-            .map(cb => cb.value);
+    if (selected.length === 0) {
+        alert("Please select candidates");
+        return;
+    }
 
-        const batchId = document.getElementById('batchSelect').value;
-
-        if (!batchId) {
-            alert("Please select batch");
-            return;
-        }
-
-        if (selected.length === 0) {
-            alert("Please select candidates");
-            return;
-        }
-
-        fetch(`/assign-bulk-candidates/${currentAssignmentId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    candidate_ids: selected,
-                    batch_id: batchId
-                })
+    fetch(`/assign-bulk-candidates/${currentAssignmentId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                candidate_ids: selected,
+                batch_id: batchId
             })
-            .then(res => res.json())
-            .then(data => {
-                alert("Candidates Assigned Successfully");
-                closeRegisterModal();
-                location.reload();
-            });
-    }
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert("Candidates Assigned Successfully");
+            closeRegisterModal();
+            location.reload();
+        });
+}
 
-    function closeRegisterModal() {
-        document.getElementById('registerModal').style.display = 'none';
-    }
+function closeRegisterModal() {
+    document.getElementById('registerModal').style.display = 'none';
+}
 
-    function selectAllCandidates(master) {
-        const checkboxes = document.querySelectorAll('.candidate-checkbox');
-        checkboxes.forEach(cb => cb.checked = master.checked);
-    }
+function selectAllCandidates(master) {
+    const checkboxes = document.querySelectorAll('.candidate-checkbox');
+    checkboxes.forEach(cb => cb.checked = master.checked);
+}
 </script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
 
-        setTimeout(function() {
+    setTimeout(function() {
 
-            let success = document.getElementById("successMessage");
-            let error = document.getElementById("errorMessage");
+        let success = document.getElementById("successMessage");
+        let error = document.getElementById("errorMessage");
 
-            if (success) {
-                success.style.transition = "opacity 0.5s";
-                success.style.opacity = "0";
-                setTimeout(() => success.remove(), 500);
-            }
-
-            if (error) {
-                error.style.transition = "opacity 0.5s";
-                error.style.opacity = "0";
-                setTimeout(() => error.remove(), 500);
-            }
-
-        }, 4000); // disappears after 4 seconds
-
-    });
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-
-        // Check if page was reloaded (F5 / refresh button)
-        if (performance.navigation.type === 1) {
-            window.location.href = "{{ route('assignments.index') }}";
+        if (success) {
+            success.style.transition = "opacity 0.5s";
+            success.style.opacity = "0";
+            setTimeout(() => success.remove(), 500);
         }
 
-    });
+        if (error) {
+            error.style.transition = "opacity 0.5s";
+            error.style.opacity = "0";
+            setTimeout(() => error.remove(), 500);
+        }
+
+    }, 4000); // disappears after 4 seconds
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    // Check if page was reloaded (F5 / refresh button)
+    if (performance.navigation.type === 1) {
+        window.location.href = "{{ route('assignments.index') }}";
+    }
+
+});
 </script>
 
 
 <script>
-    function showTooltip(el) {
-        let batches = JSON.parse(el.dataset.batches);
-        let tooltip = el.parentElement.querySelector('.batch-tooltip');
+function showTooltip(el) {
+    let batches = JSON.parse(el.dataset.batches);
+    let tooltip = el.parentElement.querySelector('.batch-tooltip');
 
-        tooltip.innerHTML = batches.join("<br>");
-        tooltip.style.display = "block";
+    tooltip.innerHTML = batches.join("<br>");
+    tooltip.style.display = "block";
+}
+
+function hideTooltip(el) {
+    let tooltip = el.parentElement.querySelector('.batch-tooltip');
+    tooltip.style.display = "none";
+}
+
+function openBatchModal(el) {
+    let batches = JSON.parse(el.dataset.batches || "[]");
+
+    let html = "";
+
+    if (batches.length === 0) {
+        html = "<div>No batches assigned</div>";
+    } else {
+        batches.forEach(function(batch) {
+            html += `<div style="padding:6px 0;border-bottom:1px solid #eee;">${batch}</div>`;
+        });
     }
 
-    function hideTooltip(el) {
-        let tooltip = el.parentElement.querySelector('.batch-tooltip');
-        tooltip.style.display = "none";
-    }
+    document.getElementById("batchList").innerHTML = html;
+    document.getElementById("batchModal").style.display = "flex";
+}
 
-    function openBatchModal(el) {
-        let batches = JSON.parse(el.dataset.batches || "[]");
-
-        let html = "";
-
-        if (batches.length === 0) {
-            html = "<div>No batches assigned</div>";
-        } else {
-            batches.forEach(function(batch) {
-                html += `<div style="padding:6px 0;border-bottom:1px solid #eee;">${batch}</div>`;
-            });
-        }
-
-        document.getElementById("batchList").innerHTML = html;
-        document.getElementById("batchModal").style.display = "flex";
-    }
-
-    function closeBatchModal() {
-        document.getElementById("batchModal").style.display = "none";
-    }
+function closeBatchModal() {
+    document.getElementById("batchModal").style.display = "none";
+}
 </script>
+
+
+{{-- STATE/DISTRICT CONFIG --}}
+<script>
+window.stateDropdownId = "state";
+window.cityDropdownId = "district";
+
+window.selectedState = "{{ request('state') }}";
+window.selectedDistrict = "{{ request('district') }}";
+</script>
+
+<script src="{{ asset('js/state.js') }}"></script>
 @endsection

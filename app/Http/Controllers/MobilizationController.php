@@ -28,31 +28,27 @@ class MobilizationController extends Controller
 
 public function index(Request $request)
 {
-
-
     $query = Mobilization::query()
-        ->with([
-            'assignments' => function ($q) {
-                $q->withPivot(
-                    'samarth_done',
-                    'uan_done',
-                    'documents_done',
-                    'offer_letter_done',
-                    'placement_company',
-                    'date_of_placement'
-                );
-            },
-            'latestFormResponse.form',
-            'latestRemark'
-        ])
+    ->with([
+       
+        'assignments' => function ($q) {
+            $q->withPivot(
+                'samarth_done',
+                'uan_done',
+                'documents_done',
+                'offer_letter_done',
+                'placement_company',
+                'date_of_placement'
+            );
+        },
+        'latestFormResponse.form',
+        'latestRemark'
+    ])
         ->withCount([
             'formResponses as form_responses_count',
             'assignments as assignments_count'
         ]);
 
-    // ================= FILTERS =================
-
-    // 🔍 Global Search
     if ($request->filled('search')) {
         $search = trim($request->search);
 
@@ -62,52 +58,41 @@ public function index(Request $request)
               ->orWhere('aadhar_number', 'like', "%{$search}%");
         });
     }
-
-    // 👤 Name Filter
     if ($request->filled('name')) {
         $name = trim($request->name);
         $query->where('name', 'like', "%{$name}%");
     }
-
-    // 📱 Mobile Filter
     if ($request->filled('mobile')) {
         $mobile = preg_replace('/\D/', '', $request->mobile); // numbers only
         $query->where('mobile', 'like', "%{$mobile}%");
     }
 
-    // 🆔 Aadhar
     if ($request->filled('aadhar')) {
         $query->where('aadhar_number', 'like', "%" . trim($request->aadhar) . "%");
     }
 
-    // 📅 Date
     if ($request->filled('date')) {
         $query->whereDate('created_at', $request->date);
     }
 
-    // 📌 Assignment
     if ($request->filled('assignment')) {
         $query->whereHas('assignments', function ($q) use ($request) {
             $q->where('assignments.id', $request->assignment);
         });
     }
 
-    // 🌍 State
     if ($request->filled('state')) {
         $query->where('state', $request->state);
     }
 
-    // 🏙 District
     if ($request->filled('district')) {
         $query->where('city', $request->district);
     }
 
-    // 📍 Location
     if ($request->filled('location')) {
         $query->where('location', 'like', "%" . trim($request->location) . "%");
     }
 
-    // 🎂 Age Filter (IMPROVED 🔥)
     if ($request->filled('age')) {
         $age = (int) $request->age;
 
@@ -117,14 +102,12 @@ public function index(Request $request)
         ]);
     }
 
-    // ✅ Samarth Status
     if ($request->filled('samarth_status')) {
         $query->whereHas('assignments', function ($q) use ($request) {
             $q->wherePivot('samarth_done', $request->samarth_status);
         });
     }
 
-    // ================= RESULT =================
 
     $mobilizations = $query
         ->latest()
@@ -214,6 +197,8 @@ public function store(Request $request)
             }
         }
 
+        $stateName = $request->state;
+
         $mobilization = Mobilization::create([
             'identification_remark' => $request->identification_remark,
 
@@ -227,7 +212,7 @@ public function store(Request $request)
             'age' => $age,
             'gender' => $request->gender,
             'marital_status' => $request->marital_status,
-            'state' => $request->state,
+            'state' => $stateName,
             'city' => $request->city,
             'location' => $request->location,
 

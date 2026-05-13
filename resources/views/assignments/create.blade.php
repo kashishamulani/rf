@@ -162,17 +162,32 @@
                 <input type="number" name="requirement" required class="form-control">
             </div>
 
-            <div class="form-group">
-                <label>State *</label>
-                <select name="state" id="state" required class="form-control"></select>
-            </div>
+          <div class="field">
+    <label>State</label>
 
-            <div class="form-group">
-                <label>District *</label>
-                <select name="district" id="district" required class="form-control">
-                    <option value="">Select District</option>
-                </select>
-            </div>
+    <select name="state"
+            id="filterState"
+            class="form-select"
+            style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
+
+        <option value="">Select State</option>
+
+    </select>
+</div>
+
+<div class="field">
+    <label>City/District</label>
+
+    <select name="district"
+            id="filterDistrict"
+            class="form-select"
+            style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
+
+        <option value="">Select City</option>
+
+    </select>
+</div>
+
 
             <div class="form-group">
                 <label>Location *</label>
@@ -305,42 +320,7 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const stateSelect = document.getElementById('state');
-    const districtSelect = document.getElementById('district');
 
-    fetch('/states')
-        .then(res => res.json())
-        .then(data => {
-            stateSelect.innerHTML = '<option value="">Select State</option>';
-            data.forEach(state => {
-                const option = document.createElement('option');
-                option.value = state.name; // Use name as value (matches DB)
-                option.textContent = state.name;
-                option.setAttribute('data-code', state.iso2); // Store code for district lookup
-                stateSelect.appendChild(option);
-            });
-        });
-
-    stateSelect.addEventListener('change', function () {
-        const code = this.options[this.selectedIndex].getAttribute('data-code');
-        districtSelect.innerHTML = '<option value="">Loading...</option>';
-
-        if (!code) return districtSelect.innerHTML = '<option value="">Select District</option>';
-
-        fetch(`/districts/${code}`)
-            .then(res => res.json())
-            .then(data => {
-                districtSelect.innerHTML = '<option value="">Select District</option>';
-                data.forEach(d => {
-                    const option = document.createElement('option');
-                    option.value = d.name;
-                    option.textContent = d.name;
-                    districtSelect.appendChild(option);
-                });
-            });
-    });
-});
 
 function openHrModal() {
     document.getElementById('hrModal').style.display = 'flex';
@@ -376,4 +356,9 @@ function selectHr(id, name, mobile, email, state) {
 }
 </script>
 
+<script>
+    window.selectedState = "{{ old('state', request('state')) }}";
+    window.selectedDistrict = "{{ old('district', request('district')) }}";
+</script>
+<script src="{{ asset('js/state.js') }}"></script>
 @endsection

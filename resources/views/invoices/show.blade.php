@@ -126,6 +126,41 @@
         @endif
 
 
+        {{-- ================= BATCH STUDENTS ================= --}}
+
+        <div class="table-title">Batch Students</div>
+
+        <table class="po-table">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Student Name</th>
+                    <th>Assignment</th>
+                    <th>Mobile</th>
+                    <th>State</th>
+                    <th>City</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @forelse($batchStudents as $i => $student)
+                <tr>
+                    <td>{{ $i+1 }}</td>
+                    <td>{{ $student->name ?? '-' }}</td>
+                    <td>{{ $student->assignment_name ?? '-' }}</td>
+                    <td>{{ $student->mobile ?? '-' }}</td>
+                    <td>{{ $student->state ?? '-' }}</td>
+                    <td>{{ $student->city ?? '-' }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="6" style="text-align:center;">No students found in this batch</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+
+
         {{-- ================= ASSIGNMENT ITEMS ================= --}}
 
         <div class="table-title">Assignment Billing</div>

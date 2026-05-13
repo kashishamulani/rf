@@ -70,15 +70,16 @@ public function store(Request $request)
     try {
 
         $request->validate([
-            'assignment_id'   => 'required|exists:assignments,id',
-            'mobilization_id'=> 'required|exists:mobilizations,id',
-            'remark'         => 'nullable|string|max:2000',
+            'assignment_id'    => 'required|exists:assignments,id',
+            'mobilization_id'  => 'required|exists:mobilizations,id',
+            'remark'           => 'nullable|string|max:50',
         ]);
 
-        $data = new AssignmentStudent();
-
-        $data->assignment_id   = $request->assignment_id;
-        $data->mobilization_id = $request->mobilization_id;
+        // Prevent duplicate entry
+        $data = AssignmentStudent::firstOrNew([
+            'assignment_id'   => $request->assignment_id,
+            'mobilization_id' => $request->mobilization_id,
+        ]);
 
         $data->samarth_done = $request->samarth_done;
         $data->samarth_id   = $request->samarth_id ?? null;
@@ -86,10 +87,9 @@ public function store(Request $request)
         $data->uan_done   = $request->boolean('uan_done');
         $data->uan_number = $request->uan_number ?? null;
 
-        $data->documents_done   = $request->boolean('documents_done');
-        $data->offer_letter_done= $request->boolean('offer_letter_done');
+        $data->documents_done    = $request->boolean('documents_done');
+        $data->offer_letter_done = $request->boolean('offer_letter_done');
 
-        // NEW FIELDS
         $data->offer_letter_date = $request->offer_letter_date ?: null;
         $data->ec_date           = $request->ec_date ?: null;
         $data->progress_id       = $request->progress_id ?: null;
@@ -97,35 +97,52 @@ public function store(Request $request)
         $data->registration_id       = $request->registration_id ?? null;
         $data->registration_password = $request->registration_password ?? null;
         $data->registration_number   = $request->registration_number ?? null;
-        $data->ec_number             = $request->ec_number ?? null;
+
+        $data->ec_number = $request->ec_number ?? null;
 
         $data->date_of_placement = $request->date_of_placement ?: null;
-        $data->placement_company = $request->placement_company ?? null;
-        $data->placement_offering= $request->placement_offering ?? null;
 
-        // ✅ REMARK FIELD
+        $data->placement_company  = $request->placement_company ?? null;
+        $data->placement_offering = $request->placement_offering ?? null;
+
         $data->remark = $request->remark ?? null;
 
-        /* FILE UPLOADS */
+        /*
+        |--------------------------------------------------------------------------
+        | FILE UPLOADS
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->hasFile('samarth_certificate')) {
+
             $file = $request->file('samarth_certificate');
+
             $filename = time().'_samarth_'.$file->getClientOriginalName();
+
             $file->move(public_path('uploads/samarth'), $filename);
+
             $data->samarth_certificate = $filename;
         }
 
         if ($request->hasFile('uan_certificate')) {
+
             $file = $request->file('uan_certificate');
+
             $filename = time().'_uan_'.$file->getClientOriginalName();
+
             $file->move(public_path('uploads/uan'), $filename);
+
             $data->uan_certificate = $filename;
         }
 
         if ($request->hasFile('offer_letter_file')) {
+
             $file = $request->file('offer_letter_file');
+
             $filename = time().'_offer_'.$file->getClientOriginalName();
+
             $file->move(public_path('uploads/offer_letters'), $filename);
+
             $data->offer_letter_file = $filename;
         }
 
@@ -133,17 +150,18 @@ public function store(Request $request)
 
         return redirect()->route(
             'assignment.students.view',
-            [$request->assignment_id, $request->mobilization_id]
+            [$data->assignment_id, $data->mobilization_id]
         )->with('success', 'Student data saved successfully');
 
     } catch (\Exception $e) {
 
-        \Log::error('Error storing assignment student data: '.$e->getMessage());
+        \Log::error('STORE ERROR: '.$e->getMessage());
 
-        return back()->with('error', 'Failed to save student data');
+        return back()
+            ->withInput()
+            ->with('error', $e->getMessage());
     }
 }
-
 
 public function fullView($assignmentId, $studentId)
 {
@@ -186,43 +204,60 @@ public function update(Request $request, $id)
         $data->documents_done    = $request->boolean('documents_done');
         $data->offer_letter_done = $request->boolean('offer_letter_done');
 
-        // NEW FIELDS
         $data->offer_letter_date = $request->offer_letter_date ?: null;
-        $data->ec_date           = $request->ec_date ?: null;
-        $data->progress_id       = $request->progress_id ?: null;
+
+        $data->ec_date     = $request->ec_date ?: null;
+        $data->progress_id = $request->progress_id ?: null;
 
         $data->registration_id       = $request->registration_id ?? null;
         $data->registration_password = $request->registration_password ?? null;
         $data->registration_number   = $request->registration_number ?? null;
-        $data->ec_number             = $request->ec_number ?? null;
+
+        $data->ec_number = $request->ec_number ?? null;
 
         $data->date_of_placement = $request->date_of_placement ?: null;
-        $data->placement_company = $request->placement_company ?? null;
-        $data->placement_offering= $request->placement_offering ?? null;
 
-        // ✅ ADD REMARK
+        $data->placement_company  = $request->placement_company ?? null;
+        $data->placement_offering = $request->placement_offering ?? null;
+
         $data->remark = $request->remark ?? null;
 
-        /* FILE UPDATE */
+        /*
+        |--------------------------------------------------------------------------
+        | FILE UPDATE
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->hasFile('samarth_certificate')) {
+
             $file = $request->file('samarth_certificate');
+
             $filename = time().'_samarth_'.$file->getClientOriginalName();
+
             $file->move(public_path('uploads/samarth'), $filename);
+
             $data->samarth_certificate = $filename;
         }
 
         if ($request->hasFile('uan_certificate')) {
+
             $file = $request->file('uan_certificate');
+
             $filename = time().'_uan_'.$file->getClientOriginalName();
+
             $file->move(public_path('uploads/uan'), $filename);
+
             $data->uan_certificate = $filename;
         }
 
         if ($request->hasFile('offer_letter_file')) {
+
             $file = $request->file('offer_letter_file');
+
             $filename = time().'_offer_'.$file->getClientOriginalName();
+
             $file->move(public_path('uploads/offer_letters'), $filename);
+
             $data->offer_letter_file = $filename;
         }
 
@@ -235,9 +270,11 @@ public function update(Request $request, $id)
 
     } catch (\Exception $e) {
 
-        \Log::error('Error updating assignment student data: '.$e->getMessage());
+        \Log::error('UPDATE ERROR: '.$e->getMessage());
 
-        return back()->with('error', 'Failed to update student data');
+        return back()
+            ->withInput()
+            ->with('error', $e->getMessage());
     }
 }
 

@@ -208,7 +208,30 @@
                 class="form-textarea">{{ old('payment_detail', $invoice->payment_detail) }}</textarea>
         </div>
 
+        <!-- STUDENTS TABLE -->
 
+        <div class="table-wrapper">
+
+            <div class="table-title">Batch Students</div>
+
+            <table id="studentTable" class="po-table">
+
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Student Name</th>
+                        <th>Assignment</th>
+                        <th>Mobile</th>
+                        <th>State</th>
+                        <th>City</th>
+                    </tr>
+                </thead>
+
+                <tbody id="studentBody"></tbody>
+
+            </table>
+
+        </div>
 
         <!-- ASSIGNMENT TABLE -->
 
@@ -276,7 +299,9 @@ const billedPoItems = @json(
     $invoice->poItems->pluck('qty', 'po_item_id')
 );
 </script>
+
 <script>
+
 const batchSelect = document.getElementById('batchSelect');
 const batchSizeInput = document.getElementById('batchSize');
 const batchQuantityHidden = document.getElementById('batchQuantityHidden');
@@ -288,10 +313,15 @@ const assignmentBody = document.getElementById('invoiceAssignmentBody');
 const poTable = document.getElementById('invoicePoTable');
 const poBody = document.getElementById('invoicePoBody');
 
+const studentTable = document.getElementById('studentTable');
+const studentBody = document.getElementById('studentBody');
 
-/* =========================
-   CALCULATE BATCH VALUE
-========================= */
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE BATCH VALUE
+|--------------------------------------------------------------------------
+*/
 
 function updateBatchValue() {
 
@@ -300,6 +330,9 @@ function updateBatchValue() {
     document.querySelectorAll('#invoicePoBody tr').forEach(row => {
 
         let qtyInput = row.querySelector('input');
+
+        if (!qtyInput) return;
+
         let rate = parseFloat(row.children[4].innerText) || 0;
         let qty = parseFloat(qtyInput.value) || 0;
 
@@ -314,20 +347,38 @@ function updateBatchValue() {
 
 }
 
-/* =========================
-   LOAD ASSIGNMENTS
-========================= */
+
+/*
+|--------------------------------------------------------------------------
+| LOAD ASSIGNMENTS
+|--------------------------------------------------------------------------
+*/
 
 function loadAssignments(batchId) {
 
     assignmentBody.innerHTML = '';
     assignmentTable.style.display = 'none';
 
-    fetch(`/batches/${batchId}/assignments`)
+    fetch(`/invoices/batch-assignments/${batchId}`)
         .then(res => res.json())
         .then(data => {
 
-            if (!data.length) return;
+            assignmentBody.innerHTML = '';
+
+            if (!data.length) {
+
+                assignmentBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:12px;">
+                            No assignment billing rows available.
+                        </td>
+                    </tr>
+                `;
+
+                assignmentTable.style.display = 'table';
+
+                return;
+            }
 
             assignmentTable.style.display = 'table';
 
@@ -335,23 +386,23 @@ function loadAssignments(batchId) {
 
                 let billed = billedAssignments[a.id] ?? '';
 
-                const row = `
-<tr>
-<td>${index + 1}</td>
-<td>${a.assignment_name}</td>
-<td>${a.requirement}</td>
-<td>${a.remaining}</td>
-<td>${a.build}</td>
-<td>
-<input type="number"
-name="billed_assignments[${a.id}]"
-value="${billed}"
-min="0"
-max="${a.build}"
-class="form-input">
-</td>
-</tr>
-`;
+                let row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${a.assignment_name ?? '-'}</td>
+                        <td>${a.requirement ?? 0}</td>
+                        <td>${a.remaining ?? 0}</td>
+                        <td>${a.build ?? 0}</td>
+                        <td>
+                            <input type="number"
+                                name="billed_assignments[${a.id}]"
+                                value="${billed}"
+                                min="0"
+                                max="${a.build ?? 0}"
+                                class="form-input">
+                        </td>
+                    </tr>
+                `;
 
                 assignmentBody.insertAdjacentHTML('beforeend', row);
 
@@ -359,69 +410,251 @@ class="form-input">
 
         })
         .catch(error => {
-            console.error("Assignment load error:", error);
+
+            console.error('Assignment load error:', error);
+
+            assignmentBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center;color:red;padding:12px;">
+                        Failed to load assignments.
+                    </td>
+                </tr>
+            `;
+
+            assignmentTable.style.display = 'table';
+
         });
+
 }
 
 
-/* =========================
-   LOAD PO ITEMS
-========================= */
+/*
+|--------------------------------------------------------------------------
+| LOAD PO ITEMS
+|--------------------------------------------------------------------------
+*/
 
 function loadPoItems(poId) {
 
     poBody.innerHTML = '';
     poTable.style.display = 'none';
 
+    if (!poId) return;
+
     fetch(`/po/${poId}/items`)
         .then(res => res.json())
         .then(items => {
 
-            if (!items.length) return;
+            poBody.innerHTML = '';
+
+            if (!items.length) {
+
+                poBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:12px;">
+                            No PO items found.
+                        </td>
+                    </tr>
+                `;
+
+                poTable.style.display = 'table';
+
+                return;
+            }
 
             poTable.style.display = 'table';
 
             items.forEach((item, index) => {
 
-                let remaining = item.remaining_qty ?? (item.quantity - item.used_quantity);
+                let remaining = item.remaining_qty ??
+                    ((item.quantity || 0) - (item.used_quantity || 0));
 
                 let billed = billedPoItems[item.id] ?? '';
 
-                const row = `
-<tr>
-<td>${index+1}</td>
-<td>${item.item}</td>
-<td>${item.quantity}</td>
-<td>${remaining}</td>
-<td>${item.value}</td>
-<td>
-<input type="number"
-name="billed_po_items[${item.id}]"
-value="${billed}"
-min="0"
-max="${remaining}"
-class="form-input billed-po"
-oninput="updateBatchValue()">
-</td>
-</tr>
-`;
+                let row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${item.item || item.item_name || 'N/A'}</td>
+                        <td>${item.quantity || 0}</td>
+                        <td>${remaining}</td>
+                        <td>${item.value || 0}</td>
+                        <td>
+                            <input type="number"
+                                name="billed_po_items[${item.id}]"
+                                value="${billed}"
+                                min="0"
+                                max="${remaining}"
+                                class="form-input billed-po"
+                                oninput="updateBatchValue()">
+                        </td>
+                    </tr>
+                `;
 
                 poBody.insertAdjacentHTML('beforeend', row);
 
             });
 
-           setTimeout(updateBatchValue, 400);
+            setTimeout(updateBatchValue, 300);
 
         })
         .catch(error => {
-            console.error("PO items load error:", error);
+
+            console.error('PO item load error:', error);
+
+            poBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center;color:red;padding:12px;">
+                        Failed to load PO items.
+                    </td>
+                </tr>
+            `;
+
+            poTable.style.display = 'table';
+
         });
+
 }
 
 
-/* =========================
-   BATCH CHANGE EVENT
-========================= */
+/*
+|--------------------------------------------------------------------------
+| LOAD STUDENTS
+|--------------------------------------------------------------------------
+*/
+
+function loadStudents(batchId) {
+
+    studentBody.innerHTML = '';
+    studentTable.style.display = 'none';
+
+    fetch(`/invoices/batch-students/${batchId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            studentBody.innerHTML = '';
+
+            if (!data.length) {
+
+                studentBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:12px;">
+                            No students found in this batch.
+                        </td>
+                    </tr>
+                `;
+
+                studentTable.style.display = 'table';
+
+                return;
+            }
+
+            studentTable.style.display = 'table';
+
+            data.forEach((student, index) => {
+
+                let row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${student.name ?? '-'}</td>
+                        <td>${student.assignment_name ?? '-'}</td>
+                        <td>${student.mobile ?? '-'}</td>
+                        <td>${student.state ?? '-'}</td>
+                        <td>${student.city ?? '-'}</td>
+                    </tr>
+                `;
+
+                studentBody.insertAdjacentHTML('beforeend', row);
+
+            });
+
+        })
+        .catch(error => {
+
+            console.error('Student load error:', error);
+
+            studentBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center;color:red;padding:12px;">
+                        Failed to load students.
+                    </td>
+                </tr>
+            `;
+
+            studentTable.style.display = 'table';
+
+        });
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RESET TABLES
+|--------------------------------------------------------------------------
+*/
+
+function resetTables() {
+
+    assignmentBody.innerHTML = '';
+    poBody.innerHTML = '';
+    studentBody.innerHTML = '';
+
+    assignmentTable.style.display = 'none';
+    poTable.style.display = 'none';
+    studentTable.style.display = 'none';
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LOAD BATCH DATA
+|--------------------------------------------------------------------------
+*/
+
+function loadBatchData(batchId, poId = null) {
+
+    fetch(`/invoices/batch-info/${batchId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            let batchSize = parseFloat(data.batch_size) || 0;
+
+            batchSizeInput.value = batchSize;
+
+            if (!batchQuantityHidden.value) {
+                batchQuantityHidden.value = {{ $invoice->batch_quantity }};
+            }
+
+            loadAssignments(batchId);
+
+            loadStudents(batchId);
+
+            const finalPoId = poId || data.po_id;
+
+            if (finalPoId) {
+                loadPoItems(finalPoId);
+            } else {
+                poTable.style.display = 'none';
+            }
+
+        })
+        .catch(error => {
+
+            console.error('Batch info error:', error);
+
+            resetTables();
+
+        });
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| BATCH CHANGE EVENT
+|--------------------------------------------------------------------------
+*/
 
 batchSelect.addEventListener('change', () => {
 
@@ -433,49 +666,24 @@ batchSelect.addEventListener('change', () => {
         batchQuantityHidden.value = '';
         valueField.value = '';
 
-        assignmentBody.innerHTML = '';
-        assignmentTable.style.display = 'none';
-
-        poBody.innerHTML = '';
-        poTable.style.display = 'none';
+        resetTables();
 
         return;
     }
 
     const batchId = selected.value;
-    const batchSize = parseFloat(selected.dataset.size) || 0;
-
-    batchSizeInput.value = batchSize;
-
-    fetch(`/invoices/batch-info/${batchId}`)
-        .then(res => res.json())
-        .then(data => {
-
-            let batchSize = parseFloat(data.batch_size) || 0;
-            let remaining = parseFloat(data.remaining_quantity) || 0;
-
-            batchSizeInput.value = batchSize;
-            if(!batchQuantityHidden.value){
-    batchQuantityHidden.value = {{ $invoice->batch_quantity }};
-}
-
-        });
-
-
-    loadAssignments(batchId);
-
     const poId = selected.dataset.po;
 
-    if (poId) {
-        loadPoItems(poId);
-    }
+    loadBatchData(batchId, poId);
 
 });
 
 
-/* =========================
-   LOAD DATA ON PAGE LOAD
-========================= */
+/*
+|--------------------------------------------------------------------------
+| PAGE LOAD
+|--------------------------------------------------------------------------
+*/
 
 window.addEventListener('load', () => {
 
@@ -484,31 +692,14 @@ window.addEventListener('load', () => {
     if (!selected.value) return;
 
     const batchId = selected.value;
-    const batchSize = parseFloat(selected.dataset.size) || 0;
-
-    batchSizeInput.value = batchSize;
-
-    fetch(`/invoices/batch-info/${batchId}`)
-        .then(res => res.json())
-        .then(data => {
-
-            let batchSize = parseFloat(data.batch_size) || 0;
-            let remaining = parseFloat(data.remaining_quantity) || 0;
-
-            batchSizeInput.value = batchSize;
-            batchQuantityHidden.value = {{ $invoice->batch_quantity }};
-
-        });
-
-    loadAssignments(batchId);
-
     const poId = selected.dataset.po;
 
-    if (poId) {
-        loadPoItems(poId);
-    }
+    batchQuantityHidden.value = {{ $invoice->batch_quantity }};
+
+    loadBatchData(batchId, poId);
 
 });
+
 </script>
 
 @endsection

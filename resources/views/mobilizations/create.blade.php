@@ -411,7 +411,7 @@ select {
 
                 <div class="field">
                     <label>State</label>
-                    <select name="state" id="state" class="form-select"
+                    <select name="state" id="filterState" class="form-select"
                         style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
                         <option value="">Select State</option>
                     </select>
@@ -419,7 +419,7 @@ select {
 
                 <div class="field">
                     <label>City/District</label>
-                    <select name="city" id="city" class="form-select"
+                    <select name="city" id="filterDistrict" class="form-select"
                         style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
                         <option value="">Select City</option>
                     </select>
@@ -497,10 +497,6 @@ select {
                         </div>
                     </div>
 
-
-
-
-
                 </div>
             </div>
 
@@ -534,11 +530,6 @@ select {
                 </div>
             </div>
         </div>
-
-
-
-
-
 
         {{-- STEP 3: DOCUMENT UPLOAD --}}
         <div class="step" id="step-3">
@@ -703,7 +694,13 @@ select {
     </form>
 </div>
 
-{{-- JS --}}
+<script>
+    window.selectedState = "{{ old('state', request('state')) }}";
+    window.selectedDistrict = "{{ old('city', request('city')) }}";
+</script>
+
+<script src="{{ asset('js/state.js') }}"></script>
+
 <script>
 function nextStep(step) {
     document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
@@ -768,57 +765,7 @@ function updateExperienceNumbers() {
     });
 }
 
-// State/City load
-document.addEventListener("DOMContentLoaded", function() {
 
-    const stateSelect = document.getElementById("state");
-    const citySelect = document.getElementById("city");
-
-    // Load states
-    fetch("/states")
-        .then(res => res.json())
-        .then(response => {
-            const states = Array.isArray(response) ? response : response.data || response.states || [];
-
-            let options = '<option value="">Select State</option>';
-
-            states.forEach(state => {
-                options += `<option value="${state.iso2}">${state.name}</option>`;
-            });
-
-            stateSelect.innerHTML = options;
-        })
-        .catch(err => console.error("States error:", err));
-
-    // 👇 THIS WAS MISSING / WRONG
-    stateSelect.addEventListener("change", function() {
-
-        const stateCode = this.value;
-
-        citySelect.innerHTML = '<option>Loading...</option>';
-
-        if (!stateCode) {
-            citySelect.innerHTML = '<option value="">Select City</option>';
-            return;
-        }
-
-        fetch(`/districts/${stateCode}`)
-            .then(res => res.json())
-            .then(response => {
-                const cities = Array.isArray(response) ? response : response.data || [];
-
-                let options = '<option value="">Select City</option>';
-
-                cities.forEach(city => {
-                    options += `<option value="${city.name}">${city.name}</option>`;
-                });
-
-                citySelect.innerHTML = options;
-            })
-            .catch(err => console.error("City error:", err));
-    });
-
-});
 
 // Role → Subrole dynamic
 document.addEventListener('change', function(e) {

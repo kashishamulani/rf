@@ -254,10 +254,21 @@
             </tr>
         </table>
 
-        @php
-        $f = new \NumberFormatter("en", \NumberFormatter::SPELLOUT);
-        $amountInWords = ucwords($f->format($grandTotal)) . " Rupees Only";
-        @endphp
+       @php
+
+if (class_exists('NumberFormatter')) {
+
+    $f = new \NumberFormatter("en", \NumberFormatter::SPELLOUT);
+
+    $amountInWords = ucwords($f->format($grandTotal)) . " Rupees Only";
+
+} else {
+
+    $amountInWords = $grandTotal . " Rupees Only";
+
+}
+
+@endphp
 
         <!-- Amount in Words -->
         <table>

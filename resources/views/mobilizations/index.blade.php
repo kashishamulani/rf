@@ -584,9 +584,7 @@ table {
 
     {{-- SUCCESS MESSAGE --}}
     @if(session('success'))
-    <div style="margin-bottom:20px; padding:12px 16px; 
-                                                            background:#ecfdf5; border:1px solid #10b981; 
-                                                            color:#065f46; border-radius:10px;">
+    <div style="margin-bottom:20px; padding:12px 16px; background:#ecfdf5; border:1px solid #10b981; color:#065f46; border-radius:10px;">
         {{ session('success') }}
     </div>
     @endif
@@ -720,26 +718,40 @@ table {
             </div>
 
             {{-- STATE --}}
+            {{-- STATE --}}
             <div class="field" style="flex: 1 1 80px;">
-                <label style="font-size: 13px; margin-bottom: 4px; font-weight: 600;">State</label>
+                <label style="font-size: 13px; margin-bottom: 4px; font-weight: 600;">
+                    State
+                </label>
+
                 <select name="state" id="filterState"
                     style="padding: 8px; font-size: 13px; width: 100%; border: 1px solid #e5e7eb; border-radius: 8px;">
+
                     <option value="">Select State</option>
+
                 </select>
             </div>
 
             {{-- DISTRICT --}}
             <div class="field" style="flex: 1 1 80px;">
-                <label style="font-size: 13px; margin-bottom: 4px; font-weight: 600;">District</label>
+                <label style="font-size: 13px; margin-bottom: 4px; font-weight: 600;">
+                    District
+                </label>
+
                 <select name="district" id="filterDistrict"
                     style="padding: 8px; font-size: 13px; width: 100%; border: 1px solid #e5e7eb; border-radius: 8px;">
+
                     <option value="">Select District</option>
+
                 </select>
             </div>
 
             {{-- LOCATION --}}
             <div class="field" style="flex: 1 1 80px;">
-                <label style="font-size: 13px; margin-bottom: 4px; font-weight: 600;">Location</label>
+                <label style="font-size: 13px; margin-bottom: 4px; font-weight: 600;">
+                    Location
+                </label>
+
                 <input type="text" name="location" value="{{ request('location') }}" placeholder="Location"
                     style="padding: 8px; font-size: 13px; width: 100%; border: 1px solid #e5e7eb; border-radius: 8px;">
             </div>
@@ -905,10 +917,26 @@ table {
 
 
                     <td style="padding:6px; max-width:120px;">
-                        <div style="font-size:14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                            title="{{ implode(' • ', array_filter([$m->state, $m->city, $m->location])) }}">
-                            {{ implode(' • ', array_filter([$m->state, $m->city, $m->location])) ?: '—' }}
+
+                        @php
+                        $locationParts = array_filter([
+                            $m->state,
+                            $m->city,
+                            $m->location
+                        ]);
+
+                        $locationText = implode(' • ', $locationParts);
+                        @endphp
+
+                        <div style="font-size:14px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;" title="{{ $locationText }}">
+
+                            {{ $locationText ?: '—' }}
+
                         </div>
+
                     </td>
 
                     <td style="padding:6px; text-align:center;">
@@ -1189,6 +1217,18 @@ table {
 </div>
 
 
+<script>
+window.stateDropdownId = "filterState";
+window.cityDropdownId = "filterDistrict";
+
+// request values
+window.selectedState = "{{ request('state') }}";
+window.selectedDistrict = "{{ request('district') }}";
+</script>
+
+<script src="{{ asset('js/state.js') }}"></script>
+
+
 
 
 <script>
@@ -1289,61 +1329,6 @@ document.getElementById('filterForm').addEventListener('submit', function(e) {
 </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-
-    const stateSelect = document.getElementById("filterState");
-    const districtSelect = document.getElementById("filterDistrict");
-
-    const selectedState = @json(request('state'));
-    const selectedDistrict = @json(request('district'));
-
-    // load states
-    fetch("/states")
-        .then(res => res.json())
-        .then(states => {
-            stateSelect.innerHTML = '<option value="">State</option>';
-
-            states.forEach(state => {
-                const selected = state.iso2 === selectedState ? 'selected' : '';
-                stateSelect.innerHTML +=
-                    `<option value="${state.iso2}" ${selected}>${state.name}</option>`;
-            });
-
-            if (selectedState) {
-                loadDistricts(selectedState, selectedDistrict);
-            }
-        });
-
-    // load districts when state changes
-    stateSelect.addEventListener("change", function() {
-        loadDistricts(this.value, null);
-    });
-
-    function loadDistricts(stateCode, selectedDistrict = null) {
-        districtSelect.innerHTML = '<option>Loading...</option>';
-
-        if (!stateCode) {
-            districtSelect.innerHTML = '<option value="">District</option>';
-            return;
-        }
-
-        fetch(`/districts/${stateCode}`)
-            .then(res => res.json())
-            .then(cities => {
-                districtSelect.innerHTML = '<option value="">District</option>';
-
-                cities.forEach(city => {
-                    const selected = city.name === selectedDistrict ? 'selected' : '';
-                    districtSelect.innerHTML +=
-                        `<option value="${city.name}" ${selected}>${city.name}</option>`;
-                });
-            });
-    }
-
-});
-
-
-
 window.addEventListener('pageshow', function(e) {
     if (performance.navigation.type === 1) {
         window.location.href = @json(route('mobilizations.index'));
@@ -1984,56 +1969,6 @@ window.addEventListener('pageshow', function(e) {
 });
 
 // DOM Content Loaded for state/district
-document.addEventListener("DOMContentLoaded", function() {
-    var stateSelect = document.getElementById("filterState");
-    var districtSelect = document.getElementById("filterDistrict");
-    var selectedState = @json(request('state'));
-    var selectedDistrict = @json(request('district'));
 
-    if (stateSelect) {
-        fetch("/states")
-            .then(function(res) {
-                return res.json();
-            })
-            .then(function(states) {
-                stateSelect.innerHTML = '<option value="">State</option>';
-                for (var i = 0; i < states.length; i++) {
-                    var state = states[i];
-                    var selected = state.iso2 === selectedState ? 'selected' : '';
-                    stateSelect.innerHTML += '<option value="' + state.iso2 + '" ' + selected + '>' + state
-                        .name + '</option>';
-                }
-                if (selectedState) {
-                    loadDistricts(selectedState, selectedDistrict);
-                }
-            });
-
-        stateSelect.addEventListener("change", function() {
-            loadDistricts(this.value, null);
-        });
-    }
-
-    function loadDistricts(stateCode, selectedDistrict) {
-        if (!districtSelect) return;
-        districtSelect.innerHTML = '<option>Loading...</option>';
-        if (!stateCode) {
-            districtSelect.innerHTML = '<option value="">District</option>';
-            return;
-        }
-        fetch("/districts/" + stateCode)
-            .then(function(res) {
-                return res.json();
-            })
-            .then(function(cities) {
-                districtSelect.innerHTML = '<option value="">District</option>';
-                for (var i = 0; i < cities.length; i++) {
-                    var city = cities[i];
-                    var selected = city.name === selectedDistrict ? 'selected' : '';
-                    districtSelect.innerHTML += '<option value="' + city.name + '" ' + selected + '>' + city
-                        .name + '</option>';
-                }
-            });
-    }
-});
 </script>
 @endsection

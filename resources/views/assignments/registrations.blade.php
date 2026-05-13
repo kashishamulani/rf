@@ -581,7 +581,7 @@
 
     </form>
 
-    <form id="moveToBatchForm ">
+    <div id="moveToBatchForm">
 
 
         <div>
@@ -591,16 +591,22 @@
         <div style="display:flex; gap:10px; align-items:center; margin-bottom:4px; justify-content: space-between;">
 
             <div>
-                <select id="batch_id" class="field" style="padding:8px 10px; border-radius:8px; border:1px solid #ddd;">
-                    <option value="">Select Batch</option>
+               <select id="batch_id" multiple
+    style="width:250px; padding:8px 10px; border-radius:8px; border:1px solid #ddd;">
 
-                    @foreach($assignment->batches as $batch)
-                    <option value="{{ $batch->id }}">
-                        {{ $batch->batch_code }}
-                    </option>
-                    @endforeach
+    @forelse($assignment->batches as $batch)
 
-                </select>
+        <option value="{{ $batch->id }}">
+            {{ $batch->batch_code }}
+        </option>
+
+    @empty
+
+        <option value="">No Batch Found</option>
+
+    @endforelse
+
+</select>
 
                 <button type="button " id="moveToBatchBtn" class="btn btn-primary hixu">
                     <i class="fa-solid fa-layer-group"></i>
@@ -725,51 +731,53 @@
                                             <i class="fa-solid fa-pen"></i> Edit
                                         </a>
 
-                                       <form
-    action="{{ route('assignments.removeMobilization', ['assignment' => $assignment->id, 'mobilization' => $c->id]) }}"
-    method="POST"
-    onsubmit="return confirm('Are you sure you want to remove this candidate from the assignment?')">
-    
+                                 <form action="{{ route('assignments.removeMobilization', [
+    'assignment' => $assignment->id,
+    'mobilization' => $c->id
+]) }}"
+method="POST"
+onsubmit="return confirm('Are you sure you want to remove this candidate from the assignment?')">
+
     @csrf
     @method('DELETE')
-    
+
     <button type="submit" class="dropdown-delete">
-        <i class="fa-solid fa-trash"></i> Remove
+        <i class="fa-solid fa-trash"></i>
+        Remove
     </button>
 </form>
 
-                                    </div>
+</div>
 
-                                </div>
+</div>
 
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8">
-                                <div class="empty-state">
-                                    <i class="fa-solid fa-inbox"
-                                        style="font-size: 32px; color: #d1d5db; margin-bottom: 10px;"></i>
-                                    <p style="margin: 0;">No candidates registered for this assignment yet.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-                @else
-                <div class="empty-state">
-                    <i class="fa-solid fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 10px;"></i>
-                    <h3 style="color: #374151;">No Candidates Yet</h3>
-                    <p>Add some candidates to start tracking their assignment data.</p>
-                    <a href="{{ route('assignments.addMobilizations', $assignment->id) }}" class="btn btn-success">
-                        <i class="fa-solid fa-user-plus"></i>
-                        Add First Candidate
-                    </a>
-                </div>
-                @endif
-            </div>
+</td>
+</tr>
+@empty
+<tr>
+    <td colspan="8">
+        <div class="empty-state">
+            <i class="fa-solid fa-inbox" style="font-size: 32px; color: #d1d5db; margin-bottom: 10px;"></i>
+            <p style="margin: 0;">No candidates registered for this assignment yet.</p>
         </div>
+    </td>
+</tr>
+@endforelse
+</tbody>
+</table>
+@else
+<div class="empty-state">
+    <i class="fa-solid fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 10px;"></i>
+    <h3 style="color: #374151;">No Candidates Yet</h3>
+    <p>Add some candidates to start tracking their assignment data.</p>
+    <a href="{{ route('assignments.addMobilizations', $assignment->id) }}" class="btn btn-success">
+        <i class="fa-solid fa-user-plus"></i>
+        Add First Candidate
+    </a>
+</div>
+@endif
+</div>
+</div>
 
 </div>
 
@@ -797,16 +805,25 @@
 </div>
 
 <script>
+// if (window.jQuery && $.fn.select2) {
+//     $('#batch_id').select2({
+//         placeholder: 'Select Batches',
+//         padding: '9px 10px',
+//         border: '1px solid #e5e7eb',
+//         borderRadius: '8px',
+//         fontSize: '14px',
+//         background: '#fff',
+//         outline: 'none'
+//     });
+// }
+
 if (window.jQuery && $.fn.select2) {
+
     $('#batch_id').select2({
-        placeholder: 'Select Batches',
-        padding: '9px 10px',
-        border: '1px solid #e5e7eb',
-        borderRadius: '8px',
-        fontSize: '14px',
-        background: '#fff',
-        outline: 'none'
+        placeholder: 'Select Batch',
+        width: '250px'
     });
+
 }
 
 document.getElementById('selectAll').addEventListener('change', function() {

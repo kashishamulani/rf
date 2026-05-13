@@ -3,14 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Progress;
-
 
 class AssignmentStudent extends Model
 {
     protected $fillable = [
         'assignment_id',
         'mobilization_id',
+        'progress_id',
         'samarth_done',
         'samarth_id',
         'samarth_certificate',
@@ -19,40 +18,31 @@ class AssignmentStudent extends Model
         'uan_certificate',
         'documents_done',
         'offer_letter_done',
+        'offer_letter_date',
+        'offer_letter_file',
         'registration_id',
         'registration_password',
         'registration_number',
         'ec_number',
-
-
-          'offer_letter_date',
-    'offer_letter_file',
-
-    'registration_id',
-    'registration_password',
-    'registration_number',
-    'ec_number',
-    'ec_date',
-
-    'date_of_placement',
-    'placement_company',
-    'placement_offering',
-
-    'progress_id',
-
-            // NEW PLACEMENT FIELDS
+        'ec_date',
         'date_of_placement',
         'placement_company',
-        'placement_offering'
+        'placement_offering',
+        'remark',
     ];
 
-
     public function mobilization()
-{
-    return $this->belongsTo(\App\Models\Mobilization::class, 'mobilization_id');
-}
-public function progress()
-{
-    return $this->belongsTo(\App\Models\Progress::class);
-}
+    {
+        return $this->belongsTo(\App\Models\Mobilization::class, 'mobilization_id');
+    }
+
+    public function progress()
+    {
+        return $this->belongsTo(\App\Models\Progress::class);
+    }
+
+    public function assignment()
+    {
+        return $this->belongsTo(\App\Models\Assignment::class, 'assignment_id');
+    }
 }

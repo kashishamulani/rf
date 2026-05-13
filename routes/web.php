@@ -34,6 +34,10 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\LinkAssignmentController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Http\Request;
+use App\Http\Controllers\StateController;
+use App\Http\Controllers\DistrictController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\MasterController;
 
 
 // ----------------------
@@ -54,43 +58,42 @@ Route::post('/reset-password',[PasswordController::class,'resetPassword'])->name
 // Dashboard Route
 // ----------------------
 Route::middleware('auth')->group(function () {
-   Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
-
-          Route::get('/change-password',[PasswordController::class,'changeForm'])->name('change.form');
+   Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/change-password',[PasswordController::class,'changeForm'])->name('change.form');
     Route::post('/change-password',[PasswordController::class,'changePassword'])->name('change.password');
+
+
     // Format Route
     Route::resource('formats', FormatController::class);
 
     // Assignment Routes
     Route::prefix('assignments')->group(function () {
-    Route::get('/', [AssignmentController::class, 'index'])->name('assignments.index');
-    Route::get('/create', [AssignmentController::class, 'create'])->name('assignments.create');
-    Route::post('/', [AssignmentController::class, 'store'])->name('assignments.store');
-    Route::get('/edit/{assignment}', [AssignmentController::class, 'edit'])->name('assignments.edit');
-    Route::put('/{assignment}', [AssignmentController::class, 'update'])->name('assignments.update');
-    Route::get('/view_assignment/{assignment}', [AssignmentController::class, 'show'])->name('assignments.show');
-    Route::delete('/{assignment}', [AssignmentController::class, 'destroy'])->name('assignments.destroy');
-    Route::post('/status/{assignment}', [AssignmentController::class, 'updateStatus'])->name('assignments.status');
-    Route::post('/{assignment}/attach-batch', [AssignmentController::class, 'attachBatch'])->name('assignments.attachBatch');
-    Route::post('/{assignment}/forms', [AssignmentController::class, 'storeForms'])->name('assignments.forms.store');
-    Route::get('/assignment-progress', [AssignmentController::class, 'progress'])->name('assignments.progress');
-       Route::get('/{id}/remaining', [AssignmentController::class, 'remaining']);
+        Route::get('/', [AssignmentController::class, 'index'])->name('assignments.index');
+        Route::get('/create', [AssignmentController::class, 'create'])->name('assignments.create');
+        Route::post('/', [AssignmentController::class, 'store'])->name('assignments.store');
+        Route::get('/edit/{assignment}', [AssignmentController::class, 'edit'])->name('assignments.edit');
+        Route::put('/{assignment}', [AssignmentController::class, 'update'])->name('assignments.update');
+        Route::get('/view_assignment/{assignment}', [AssignmentController::class, 'show'])->name('assignments.show');
+        Route::delete('/{assignment}', [AssignmentController::class, 'destroy'])->name('assignments.destroy');
+        Route::post('/status/{assignment}', [AssignmentController::class, 'updateStatus'])->name('assignments.status');
+        Route::post('/{assignment}/attach-batch', [AssignmentController::class, 'attachBatch'])->name('assignments.attachBatch');
+        Route::post('/{assignment}/forms', [AssignmentController::class, 'storeForms'])->name('assignments.forms.store');
+        Route::get('/assignment-progress', [AssignmentController::class, 'progress'])->name('assignments.progress');
+        Route::get('/{id}/remaining', [AssignmentController::class, 'remaining']);
+        
+        Route::get('{assignment}/student/{student}', [AssignmentStudentController::class, 'view'])->name('assignment.students.view');
+        Route::get('{assignment}/student/{student}/form', [AssignmentStudentController::class, 'form'])->name('assignment.students.form');
+        Route::post('student/store', [AssignmentStudentController::class, 'store'])->name('assignment.student.store');
+        Route::put('student/update/{id}', [AssignmentStudentController::class, 'update'])->name('assignment.student.update');
+        Route::get('/{assignment}/student/{student}/full-view', [AssignmentStudentController::class, 'fullView'])->name('assignment.students.fullview');
     });
     
-Route::prefix('assignment')->group(function () {
 
-    Route::get('{assignment}/student/{student}', [AssignmentStudentController::class, 'view'])->name('assignment.students.view');
-    Route::get('{assignment}/student/{student}/form', [AssignmentStudentController::class, 'form'])->name('assignment.students.form');
-    Route::post('student/store', [AssignmentStudentController::class, 'store'])->name('assignment.student.store');
-    Route::put('student/update/{id}', [AssignmentStudentController::class, 'update'])->name('assignment.student.update');
 
-});
-
-Route::get('/assignment/{assignment}/student/{student}/full-view', 
-    [AssignmentStudentController::class, 'fullView']
-)->name('assignment.students.fullview');
+    //actiity assignment
     Route::resource('activity-assignments',ActivityAssignmentController::class);
+
+    //Hr 
     Route::get('/api/hrs', [AssignmentController::class, 'getHrs']);
 
 
@@ -100,11 +103,12 @@ Route::get('/assignment/{assignment}/student/{student}/full-view',
     Route::get('/api/forms', [CorePhpController::class, 'getRegisters']);
     Route::get('/core/registers/{formId}', [CorePhpController::class, 'getrequest']);
 
-    
+
+    //po items
     Route::resource('po.po_items', PoItemController::class)->except(['index', 'show']);
     Route::delete('po/{po}/po_items/{po_item}', [PoItemController::class, 'destroy'])->name('po.po_items.destroy');
 
-    
+    //batches
 Route::prefix('batches')->name('batches.')->group(function () {
 
     Route::get('/', [BatchController::class,'index'])->name('index');
@@ -116,6 +120,7 @@ Route::prefix('batches')->name('batches.')->group(function () {
     Route::delete('/delete/{batch}', [BatchController::class,'destroy'])->name('destroy');
        Route::get('/{id}/po-items', [BatchController::class, 'getPoItems'])->name('po-items');
     Route::get('/{id}/assignments', [BatchController::class, 'getAssignments'])->name('assignments');
+
 });
     Route::patch('/batches/status/{batch}', [BatchController::class, 'updateStatus'])->name('batches.status');
     Route::resource('batches.candidates', BatchCandidateController::class)->only(['create', 'store', 'destroy']); 
@@ -131,6 +136,7 @@ Route::prefix('batches')->name('batches.')->group(function () {
 
     Route::get('/batches/{batch}/value', [InvoiceController::class, 'getBatchValue']);
     Route::get('/invoices/{id}/full-pdf', [InvoiceController::class, 'fullPdf'])->name('invoices.full.pdf');
+    Route::get('/invoices/batch-students/{batchId}', [InvoiceController::class, 'batchStudents']);
 
     Route::get('/mobilizations/{id}/remarks', [MobilizationController::class,'remarks'])->name('mobilizations.remarks');
     Route::post('/mobilizations/{id}/remarks', [MobilizationController::class,'storeRemark'])->name('mobilizations.storeRemark');
@@ -356,6 +362,46 @@ Route::get('/forms/prefill/{token}/thank-you', function($token){
 })->name('forms.prefilled.thankyou');
 
 // Public location routes (needed for public forms)
-Route::get('/states', [LocationController::class, 'getStates']);
-Route::get('/districts/{stateCode}', [LocationController::class, 'getDistricts']);
-Route::get('/cities/{country}/{state}', [LocationController::class, 'getCities']);
+// Route::get('/states', [LocationController::class, 'getStates']);
+// Route::get('/districts/{stateCode}', [LocationController::class, 'getDistricts']);
+// Route::get('/cities/{country}/{state}', [LocationController::class, 'getCities']);
+
+
+Route::prefix('masters')->group(function () {
+
+    Route::resource('states', StateController::class);
+    Route::resource('districts', DistrictController::class);
+    Route::resource('cities', CityController::class);
+
+    // API routes
+    Route::get('/api/states', [StateController::class, 'getStates']);
+    
+    Route::get(
+        '/api/districts/{stateId}',
+        [DistrictController::class, 'getDistricts']
+    );
+});
+
+// Route::get('/masters/api/states', [MasterController::class, 'states']);
+// Route::get('/masters/api/districts/{stateId}', [MasterController::class, 'districts']);
+
+
+
+
+Route::get('/states', function () {
+
+    $response = Http::get(
+        'https://ebiztechnologies.in/alllocation/public/api/states'
+    );
+
+    return response()->json($response->json());
+});
+
+Route::get('/districts/{id}', function ($id) {
+
+    $response = Http::get(
+        "https://ebiztechnologies.in/alllocation/public/api/districts/$id"
+    );
+
+    return response()->json($response->json());
+});

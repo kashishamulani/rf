@@ -313,6 +313,18 @@ li:not(.menu-group)>a:hover span {
                     class="{{ Route::is('team-members.*') ? 'active' : '' }}"><span>👥 Team Members</span></a>
                 <a href="{{ route('roles.index') }}" class="{{ Route::is('roles.*') ? 'active' : '' }}"><span>🛡️ Job
                         Roles</span></a>
+
+                <a href="{{ route('states.index') }}" class="{{ Route::is('states.*') ? 'active' : '' }}">
+                    <span>🌍 State Master</span>
+                </a>
+
+                <a href="{{ route('districts.index') }}" class="{{ Route::is('districts.*') ? 'active' : '' }}">
+                    <span>🏙 District Master</span>
+                </a>
+
+                <a href="{{ route('cities.index') }}" class="{{ Route::is('cities.*') ? 'active' : '' }}">
+                    <span>📍 City Master</span>
+                </a>
             </div>
         </li>
 

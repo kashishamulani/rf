@@ -265,14 +265,19 @@
 
             <div class="form-group">
                 <label class="form-label">State *</label>
-                <select name="state" id="stateSelect" class="form-select"></select>
+
+                <select name="state" id="stateSelect" class="form-select">
+                    <option value="">Select State</option>
+                </select>
             </div>
 
             <div class="form-group">
                 <label class="form-label">District *</label>
-                <select name="district" id="districtSelect" class="form-select"></select>
-            </div>
 
+                <select name="district" id="districtSelect" class="form-select">
+                    <option value="">Select District</option>
+                </select>
+            </div>
 
         </div>
 
@@ -422,7 +427,16 @@
 
     </form>
 </div>
+<script>
+    window.stateDropdownId = "stateSelect";
+    window.cityDropdownId = "districtSelect";
 
+    // edit page old values
+    window.selectedState = "{{ old('state', $batch->state) }}";
+    window.selectedDistrict = "{{ old('district', $batch->district) }}";
+</script>
+
+<script src="{{ asset('js/state.js') }}"></script>
 <script>
 const oldState = "{{ $batch->state }}";
 const oldDistrict = "{{ $batch->district }}";
@@ -445,34 +459,6 @@ document.querySelectorAll('#assignmentsOptions input')
     .forEach(cb => cb.onchange = showAssignments);
 showAssignments();
 
-const stateSelect = document.getElementById('stateSelect');
-const districtSelect = document.getElementById('districtSelect');
-
-fetch('/states').then(r => r.json()).then(states => {
-    stateSelect.innerHTML = `<option value="">--Select--</option>`;
-    states.forEach(s => {
-        stateSelect.innerHTML +=
-            `<option value="${s.iso2}"
-${s.iso2==oldState?'selected':''}>
-${s.name}</option>`;
-    });
-
-    if (oldState) loadDistricts(oldState);
-});
-
-function loadDistricts(id) {
-    fetch(`/districts/${id}`).then(r => r.json())
-        .then(d => {
-            districtSelect.innerHTML = `<option value="">--Select--</option>`;
-            d.forEach(x => {
-                districtSelect.innerHTML +=
-                    `<option value="${x.name}"
-${x.name==oldDistrict?'selected':''}>
-${x.name}</option>`;
-            });
-        });
-}
-stateSelect.onchange = () => loadDistricts(stateSelect.value);
 
 const poSelect = document.getElementById('poSelect');
 const tbody = document.getElementById('poItemsBody');
@@ -516,14 +502,11 @@ poSelect.onchange = () => loadPoItems(poSelect.value);
 
 
 
-
-
-
-
 const oldBuilds = @json($assignmentBuilds);
 const assignmentTable = document.getElementById('assignmentTable');
 const assignmentTbody = document.getElementById('assignmentTableBody');
 const batchSizeInput = document.querySelector('input[name="batch_size"]');
+
 
 function updateAssignmentTable() {
 
@@ -539,45 +522,80 @@ function updateAssignmentTable() {
     assignmentTable.style.display = 'table';
 
     const promises = Array.from(selected).map((cb, index) => {
+
         const id = cb.dataset.id;
         const name = cb.dataset.name;
 
         return fetch(`/assignments/${id}/remaining?batch_id={{ $batch->id }}`)
             .then(res => res.json())
-            .then(data => ({
-                index: index + 1,
-                id,
-                name,
-                requirement: data.requirement,
-                remaining: data.remaining,
-                oldBuild: data.current_build
-            }));
+            .then(data => {
+
+
+
+                let inputValue = '';
+
+                if (oldBuilds[id] !== undefined) {
+                    inputValue = oldBuilds[id];
+                } else if (data.student_count > 0) {
+                    inputValue = data.student_count;
+                } else if (data.current_build > 0) {
+                    inputValue = data.current_build;
+                }
+
+                return {
+                    index: index + 1,
+                    id,
+                    name,
+                    requirement: data.requirement,
+                    remaining: data.remaining,
+                    current_build: data.current_build,
+                    student_count: data.student_count,
+                    inputValue
+                };
+            });
     });
 
     Promise.all(promises).then(results => {
+
         results.forEach(data => {
+
+            const actualRemaining =
+                data.remaining + data.current_build - data.inputValue;
+
             const row = `
-<tr>
-<td>${data.index}</td>
-<td>${data.name}</td>
-<td>${data.requirement}</td>
-<td class="remaining-cell">${data.remaining - data.oldBuild}</td>
-<td>
-<input type="number"
-name="builds[${data.id}]"
-value="${data.oldBuild}"
-min="0"
-max="${data.remaining}"
-class="form-input build-input"
-data-max="${data.remaining}">
-</td>
-</tr>
-`;
+            <tr>
+
+                <td>${data.index}</td>
+
+                <td>${data.name}</td>
+
+                <td>${data.requirement}</td>
+
+                <td class="remaining-cell">
+                    ${actualRemaining}
+                </td>
+
+                <td>
+                    <input type="number"
+                        name="builds[${data.id}]"
+                        value="${data.inputValue}"
+                        min="0"
+                        max="${data.remaining + data.current_build}"
+                        class="form-input build-input"
+                        data-max="${data.remaining + data.current_build}"
+                        data-original="${data.current_build}">
+                </td>
+
+            </tr>
+            `;
+
             assignmentTbody.insertAdjacentHTML('beforeend', row);
         });
+
         attachBuildValidation();
     });
 }
+
 
 function attachBuildValidation() {
 
@@ -585,27 +603,27 @@ function attachBuildValidation() {
 
         input.addEventListener('input', function() {
 
-            let max = parseInt(this.dataset.max);
-            let originalBuild = parseInt(this.defaultValue) || 0;
+            let max = parseInt(this.dataset.max) || 0;
             let val = parseInt(this.value) || 0;
 
             if (val > max) {
+
                 alert('In batch cannot exceed remaining quantity!');
+
                 this.value = max;
+
                 val = max;
             }
 
             const row = this.closest('tr');
 
-            const newRemaining = max - val;
-            row.querySelector('.remaining-cell').innerText = newRemaining;
+            const remainingCell = row.querySelector('.remaining-cell');
 
-            // row.children[3].innerText = newRemaining;
-
+            remainingCell.innerText = max - val;
         });
-
     });
 }
+
 document.querySelectorAll('.assignment-check')
     .forEach(cb => {
         cb.addEventListener('change', updateAssignmentTable);
@@ -640,5 +658,101 @@ document.addEventListener('click', function(e) {
         options.style.display = 'none';
     }
 });
+
+
+
+
+
+
+function updateAssignmentTable() {
+
+    assignmentTbody.innerHTML = '';
+
+    const selected = document.querySelectorAll('.assignment-check:checked');
+
+    if (!selected.length) {
+        assignmentTable.style.display = 'none';
+        return;
+    }
+
+    assignmentTable.style.display = 'table';
+
+    const promises = Array.from(selected).map((cb, index) => {
+
+        const id = cb.dataset.id;
+        const name = cb.dataset.name;
+
+        return fetch(`/assignments/${id}/remaining?batch_id={{ $batch->id }}`)
+            .then(res => res.json())
+            .then(data => {
+
+                let inputValue = '';
+
+                // ✅ PRIORITY: actual students in batch > old build > current build
+                if (data.student_count > 0) {
+                    inputValue = data.student_count; // real candidates moved to batch
+                } else if (oldBuilds[id] !== undefined) {
+                    inputValue = oldBuilds[id];
+                } else if (data.current_build > 0) {
+                    inputValue = data.current_build;
+                }
+
+                return {
+                    index: index + 1,
+                    id,
+                    name,
+                    requirement: data.requirement,
+                    remaining: data.remaining,
+                    current_build: data.current_build,
+                    student_count: data.student_count,
+                    inputValue
+                };
+            });
+    });
+
+    Promise.all(promises).then(results => {
+
+        results.forEach(data => {
+
+            const actualRemaining = data.remaining + data.current_build - data.inputValue;
+
+
+            const isLocked = data.student_count > 0;
+
+            const row = `
+            <tr>
+                <td>${data.index}</td>
+                <td>${data.name}</td>
+                <td>${data.requirement}</td>
+                <td class="remaining-cell">${actualRemaining}</td>
+                <td style="position:relative;">
+                    <input type="number"
+                        name="builds[${data.id}]"
+                        value="${data.inputValue}"
+                        min="0"
+                        max="${data.remaining + data.current_build}"
+                        class="form-input build-input"
+                        data-max="${data.remaining + data.current_build}"
+                        data-original="${data.current_build}"
+                        ${isLocked ? 'readonly style="background:#f0fdf4;border-color:#22c55e;cursor:not-allowed;"' : ''}>
+
+                    ${isLocked
+                        ? `<small style="display:block;color:#16a34a;font-size:11px;margin-top:3px;">
+                                <i class="fa-solid fa-users"></i> ${data.student_count} candidates in batch
+                           </small>`
+                        : `<small style="display:block;color:#9ca3af;font-size:11px;margin-top:3px;">
+                                No candidates yet — enter manually
+                           </small>`
+                    }
+                </td>
+            </tr>
+            `;
+
+            assignmentTbody.insertAdjacentHTML('beforeend', row);
+        });
+
+        attachBuildValidation();
+    });
+}
 </script>
 @endsection

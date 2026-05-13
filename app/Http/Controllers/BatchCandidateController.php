@@ -156,97 +156,30 @@ public function store(Request $request, Batch $batch)
     return redirect()->back()->with('error', 'Failed to add candidates');
 }
 
-
-
 public function view(Batch $batch)
 {
-    // Get assignments of this batch
     $assignments = $batch->assignments()->with('forms')->get();
 
-    $assignmentIds = $assignments->pluck('id');
-
-    /*
-    |--------------------------------------------------------------------------
-    | 1. Candidates added directly to Batch
-    |--------------------------------------------------------------------------
-    */
     $batchCandidates = DB::table('batch_assignment_students')
+        ->join('mobilizations', 'mobilizations.id', '=', 'batch_assignment_students.student_id')
         ->join('assignments', 'assignments.id', '=', 'batch_assignment_students.assignment_id')
         ->where('batch_assignment_students.batch_id', $batch->id)
+        ->whereIn('batch_assignment_students.assignment_id', $assignments->pluck('id'))
         ->select(
             'batch_assignment_students.id as candidate_id',
             'batch_assignment_students.assignment_id',
             'batch_assignment_students.student_id',
-            'batch_assignment_students.name as candidate_name',
-            'batch_assignment_students.mobile',
-            'batch_assignment_students.email',
-            'batch_assignment_students.district',
-            'batch_assignment_students.state',
-            'assignments.assignment_name',
-            'batch_assignment_students.created_at',
-            DB::raw("'batch' as source") // पहचान के लिए
-        )
-        ->get();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | 2. OLD Candidates (Assignment Students)
-    |--------------------------------------------------------------------------
-    */
-    $assignmentCandidates = DB::table('assignment_students')
-        ->join('mobilizations', 'mobilizations.id', '=', 'assignment_students.mobilization_id')
-        ->join('assignments', 'assignments.id', '=', 'assignment_students.assignment_id')
-        ->whereIn('assignment_students.assignment_id', $assignmentIds)
-        ->select(
-            'assignment_students.id as candidate_id',
-            'assignment_students.assignment_id',
-            'mobilizations.id as student_id',
             'mobilizations.name as candidate_name',
             'mobilizations.mobile',
             'mobilizations.email',
-           
             'assignments.assignment_name',
-            'assignment_students.created_at',
-            DB::raw("'assignment' as source") // पहचान के लिए
+            'batch_assignment_students.created_at'
         )
+        ->distinct()
         ->get();
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | 3. Merge both
-    |--------------------------------------------------------------------------
-    */
-    $candidates = $batchCandidates->merge($assignmentCandidates);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | 4. Remove duplicates (same student + assignment)
-    |--------------------------------------------------------------------------
-    */
-    $candidates = $candidates->unique(function ($item) {
-        return $item->assignment_id . '-' . $item->student_id;
-    });
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | 5. Sort latest first
-    |--------------------------------------------------------------------------
-    */
-    $candidates = $candidates->sortByDesc('created_at')->values();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | 6. Group & Count
-    |--------------------------------------------------------------------------
-    */
-    $candidatesByAssignment = $candidates->groupBy('assignment_id');
-    $totalCandidates = $candidates->count();
-
+    $candidatesByAssignment = $batchCandidates->groupBy('assignment_id');
+    $totalCandidates = $batchCandidates->count();
 
     return view('batches.view', compact(
         'batch',
@@ -255,7 +188,6 @@ public function view(Batch $batch)
         'totalCandidates'
     ));
 }
-
 
 
 

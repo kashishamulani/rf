@@ -27,30 +27,30 @@ class LoginController extends Controller
     public function login(LoginRequest $request)
     {
         // ================= CAPTCHA VALIDATION =================
-        // $captchaResponse = $request->input('g-recaptcha-response');
+        $captchaResponse = $request->input('g-recaptcha-response');
 
-        // if (!$captchaResponse) {
-        //     return back()->withErrors([
-        //         'captcha' => 'Please verify that you are not a robot.',
-        //     ]);
-        // }
+        if (!$captchaResponse) {
+            return back()->withErrors([
+                'captcha' => 'Please verify that you are not a robot.',
+            ]);
+        }
 
-        // $verifyResponse = Http::asForm()->post(
-        //     'https://www.google.com/recaptcha/api/siteverify',
-        //     [
-        //         'secret'   => env('RECAPTCHA_SECRET_KEY'),
-        //         'response' => $captchaResponse,
-        //         'remoteip' => $request->ip(),
-        //     ]
-        // );
+        $verifyResponse = Http::asForm()->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'secret'   => env('RECAPTCHA_SECRET_KEY'),
+                'response' => $captchaResponse,
+                'remoteip' => $request->ip(),
+            ]
+        );
 
-        // $captchaResult = $verifyResponse->json();
+        $captchaResult = $verifyResponse->json();
 
-        // if (!($captchaResult['success'] ?? false)) {
-        //     return back()->withErrors([
-        //         'captcha' => 'Captcha verification failed. Please try again.',
-        //     ]);
-        // }
+        if (!($captchaResult['success'] ?? false)) {
+            return back()->withErrors([
+                'captcha' => 'Captcha verification failed. Please try again.',
+            ]);
+        }
 
         // ================= LOGIN ATTEMPT =================
         $credentials = $request->only('email', 'password');

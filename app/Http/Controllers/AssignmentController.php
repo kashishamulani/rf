@@ -14,32 +14,56 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use App\Models\ActivityAssignment;
 use App\Models\Mobilization;
-
+use App\Models\State;
 class AssignmentController extends Controller
 { 
 
 public function index(Request $request)
 {
-    $query = Assignment::with(['forms','mobilizations','batches'])
+    $query = Assignment::with([
+            'forms',
+            'mobilizations',
+            'batches',
+            
+        ])
         ->withCount('mobilizations')
+
         ->withSum('batches as total_build', 'assignment_batch.build')
+
+        // billed qty
         ->addSelect([
             'billed_qty' => DB::table('invoice_assignment_items')
-                ->join('invoices','invoices.id','=','invoice_assignment_items.invoice_id')
-                ->whereColumn('invoice_assignment_items.assignment_id','assignments.id')
+                ->join('invoices', 'invoices.id', '=', 'invoice_assignment_items.invoice_id')
+                ->whereColumn('invoice_assignment_items.assignment_id', 'assignments.id')
                 ->selectRaw('COALESCE(SUM(invoice_assignment_items.quantity),0)')
+        ])
+
+        // actual batch count
+        ->addSelect([
+            'actual_in_batch' => DB::table('batch_assignment_students')
+                ->whereColumn('batch_assignment_students.assignment_id', 'assignments.id')
+                ->selectRaw('COUNT(*)')
         ]);
 
-    // Date filters
+    /*
+    |--------------------------------------------------------------------------
+    | Date Filters
+    |--------------------------------------------------------------------------
+    */
+
     if ($request->filled('from_date') && $request->filled('to_date')) {
+
         $query->whereBetween('date', [
             $request->from_date,
             $request->to_date
         ]);
+
     } else {
+
         if ($request->filled('from_date')) {
             $query->whereDate('date', '>=', $request->from_date);
         }
+
         if ($request->filled('to_date')) {
             $query->whereDate('date', '<=', $request->to_date);
         }
@@ -49,52 +73,109 @@ public function index(Request $request)
         $query->whereDate('deadline_date', '>=', $request->deadline_from);
     }
 
-   if ($request->filled('status')) {
-    $status = is_array($request->status) ? $request->status : [$request->status];
-    $query->whereIn('status', $status);
-}
-    if ($request->filled('state')) {
-        $query->where(function ($q) use ($request) {
-            $q->where('state', $request->state)
-              ->orWhere('state', 'LIKE', '%' . $request->state . '%');
-        });
+    /*
+    |--------------------------------------------------------------------------
+    | Status Filter
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('status')) {
+
+        $status = is_array($request->status)
+            ? $request->status
+            : [$request->status];
+
+        $query->whereIn('status', $status);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | State Filter
+    |--------------------------------------------------------------------------
+    | state column stores state ID
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('state')) {
+
+        $query->where('state', $request->state);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | District Filter
+    |--------------------------------------------------------------------------
+    */
+
     if ($request->filled('district')) {
+
         $query->where('district', $request->district);
     }
 
-    // Billing filter
+    /*
+    |--------------------------------------------------------------------------
+    | Billing Filter
+    |--------------------------------------------------------------------------
+    */
+
     if ($request->billing_status === 'not_billed') {
+
         $query->havingRaw('COALESCE(billed_qty,0) = 0');
     }
 
-    // In Batch Filter
+    /*
+    |--------------------------------------------------------------------------
+    | Batch Filter
+    |--------------------------------------------------------------------------
+    */
+
     if ($request->in_batch === '0') {
-        $query->havingRaw('COALESCE(total_build,0) = 0');
+
+        $query->havingRaw('COALESCE(actual_in_batch,0) = 0');
     }
 
-    $assignments = $query
-        ->orderBy('date','desc')
-        ->get();
-        $totalRequirement = $assignments->sum('requirement');
-$totalRegs        = $assignments->sum('mobilizations_count');
-$totalBuild       = $assignments->sum('total_build');
-$totalBilled      = $assignments->sum('billed_qty');
+    /*
+    |--------------------------------------------------------------------------
+    | Final Data
+    |--------------------------------------------------------------------------
+    */
 
-$totalLeft = $assignments->sum(function ($a) {
-    return ($a->requirement ?? 0) - ($a->total_build ?? 0);
-});
+    $assignments = $query
+        ->orderBy('date', 'desc')
+        ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Totals
+    |--------------------------------------------------------------------------
+    */
+
+    $totalRequirement = $assignments->sum('requirement');
+
+    $totalRegs = $assignments->sum('mobilizations_count');
+
+    $totalBuild = $assignments->sum('total_build');
+
+    $totalBilled = $assignments->sum('billed_qty');
+
+    $totalActualInBatch = $assignments->sum('actual_in_batch');
+
+    $totalLeft = $assignments->sum(function ($a) {
+
+        return ($a->requirement ?? 0)
+             - ($a->actual_in_batch ?? 0);
+    });
 
     return view('assignments.index', compact(
-     'assignments',
-    'totalRequirement',
-    'totalRegs',
-    'totalBuild',
-    'totalBilled',
-    'totalLeft'));
+        'assignments',
+        'totalRequirement',
+        'totalRegs',
+        'totalBuild',
+        'totalBilled',
+        'totalLeft',
+        'totalActualInBatch'
+    ));
 }
-
    
 public function create()
 {
@@ -560,21 +641,56 @@ public function assignCandidates(Request $request, $assignmentId)
 
     return back()->with('success', 'Candidates assigned successfully');
 }
-public function addMobilizations($id)
+public function addMobilizations(Request $request, $assignmentId)
 {
-    $assignment = Assignment::findOrFail($id);
+    $assignment = Assignment::findOrFail($assignmentId);
 
-    // get mobilization IDs already assigned
-    $assignedIds = $assignment->mobilizations()->pluck('mobilizations.id');
+    $isFiltered =
+        $request->filled('name') ||
+        $request->filled('mobile') ||
+        $request->filled('state') ||
+        $request->filled('district');
 
-    // fetch only those not assigned yet
-    $mobilizations = Mobilization::whereNotIn('id', $assignedIds)
-                        ->latest()
-                        ->get();
+    $mobilizations = collect();
+
+    if ($isFiltered) {
+
+        $query = Mobilization::query();
+
+        // Exclude already added candidates
+        $query->whereDoesntHave('assignments', function ($q) use ($assignmentId) {
+            $q->where('assignment_id', $assignmentId);
+        });
+
+        // Name
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        // Mobile
+        if ($request->filled('mobile')) {
+            $query->where('mobile', 'like', '%' . $request->mobile . '%');
+        }
+
+        // State
+        if ($request->filled('state')) {
+            $query->where('state', $request->state);
+        }
+
+        // District
+        if ($request->filled('city')) {
+            $query->where('city', $request->city);
+        }
+
+        $mobilizations = $query
+            ->latest()
+            ->paginate(20);
+    }
 
     return view('assignments.add-mobilizations', compact(
         'assignment',
-        'mobilizations'
+        'mobilizations',
+        'isFiltered'
     ));
 }
 public function storeMobilizations(Request $request, $id)
@@ -605,6 +721,17 @@ public function removeMobilization($assignmentId, $mobilizationId)
 {
     $assignment = Assignment::findOrFail($assignmentId);
 
+    // Check if candidate exists in any batch
+    $batchAssignment = \App\Models\BatchAssignmentStudent::where('student_id', $mobilizationId)
+        ->where('assignment_id', $assignmentId)
+        ->first();
+
+    if ($batchAssignment) {
+        return redirect()
+            ->back()
+            ->with('error', 'Student already exist in batch. Cannot remove candidate.');
+    }
+
     // Remove candidate from assignment (pivot table)
     $assignment->mobilizations()->detach($mobilizationId);
 
@@ -619,28 +746,34 @@ public function remaining(Request $request, $id)
 
     $requirement = $assignment->requirement ?? 0;
 
-    // ✅ Get total built manually
     $built = DB::table('assignment_batch')
         ->where('assignment_id', $id)
         ->sum('build');
 
     $currentBuild = 0;
+    $studentCount = 0;  // ✅ add this
 
     if ($request->batch_id) {
         $currentBuild = DB::table('assignment_batch')
             ->where('assignment_id', $id)
             ->where('batch_id', $request->batch_id)
             ->value('build') ?? 0;
+
+        // ✅ count actual candidates moved to this batch for this assignment
+        $studentCount = DB::table('batch_assignment_students')
+            ->where('batch_id', $request->batch_id)
+            ->where('assignment_id', $id)
+            ->count();
     }
 
-    // ✅ Correct remaining calculation
     $remaining = $requirement - ($built - $currentBuild);
 
     return response()->json([
-        'requirement' => $requirement,
-        'built' => $built,
+        'requirement'   => $requirement,
+        'built'         => $built,
         'current_build' => $currentBuild,
-        'remaining' => max($remaining, 0),
+        'remaining'     => max($remaining, 0),
+        'student_count' => $studentCount,  
     ]);
 }
 }

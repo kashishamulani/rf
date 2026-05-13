@@ -16,20 +16,89 @@ use App\Models\InvoicePoItem;
 
 class BatchController extends Controller
 {
-public function index()
+// public function index()
+// {
+//     $batches = Batch::with([
+//         'po',
+//         'assignments' => function ($q) {
+//             $q->withPivot('build');
+//         },
+//         'invoice',
+//         'invoice.payments'
+//     ])
+//     ->orderBy('id','desc')
+//     ->get();
+
+//     return view('batches.index', compact('batches'));
+// }
+
+public function index(Request $request)
 {
-    $batches = Batch::with([
+    $query = Batch::with([
         'po',
         'assignments' => function ($q) {
             $q->withPivot('build');
         },
         'invoice',
         'invoice.payments'
-    ])
-    ->orderBy('id','desc')
-    ->get();
+    ]);
 
-    return view('batches.index', compact('batches'));
+    /*
+    |--------------------------------------------------------------------------
+    | FILTERS
+    |--------------------------------------------------------------------------
+    */
+
+    // Filter by Batch Code
+    if ($request->filled('batch_code')) {
+        $query->where('batch_code', 'like', '%' . $request->batch_code . '%');
+    }
+
+    // Filter by Assignment
+    if ($request->filled('assignment_id')) {
+        $assignmentId = $request->assignment_id;
+
+        $query->whereHas('assignments', function ($q) use ($assignmentId) {
+            $q->where('assignments.id', $assignmentId);
+        });
+    }
+
+
+    // Filter by Date Range
+if ($request->filled('from_date')) {
+    $query->whereDate('created_at', '>=', $request->from_date);
+}
+
+if ($request->filled('to_date')) {
+    $query->whereDate('created_at', '<=', $request->to_date);
+}
+
+    $batches = $query
+        ->orderBy('id', 'desc')
+        ->get();
+
+    // Actual counts
+    foreach ($batches as $batch) {
+
+        $actualCounts = DB::table('batch_assignment_students')
+            ->where('batch_id', $batch->id)
+            ->select('assignment_id', DB::raw('COUNT(*) as actual_count'))
+            ->groupBy('assignment_id')
+            ->pluck('actual_count', 'assignment_id');
+
+        foreach ($batch->assignments as $assignment) {
+            $assignment->actual_in_batch = $actualCounts[$assignment->id] ?? 0;
+        }
+    }
+
+    // Assignment dropdown data
+    $assignments = Assignment::orderBy('assignment_name')
+        ->get();
+
+    return view('batches.index', compact(
+        'batches',
+        'assignments'
+    ));
 }
 
     public function create()
@@ -39,42 +108,7 @@ public function index()
 
     return view('batches.create', compact('assignments','pos'));
 }
-// in batch with self data
-// public function show($id)
-// {
-//     $batch = Batch::with([
-//         'po',
-//         'assignments' => function($q){
-//             $q->withPivot('build');
-//         },
-//         'invoice.payments'
-//     ])->findOrFail($id);
 
-//     // If invoice exists calculate totals
-//     $invoice = $batch->invoice;
-
-//     $totalAmount = 0;
-//     $totalPaid = 0;
-//     $remaining = 0;
-
-//     if ($invoice) {
-//         $totalAmount = $invoice->batch_value ?? 0;
-
-//         $totalPaid = $invoice->payments->sum(function ($payment) {
-//             return $payment->pivot->amount;
-//         });
-
-//         $remaining = $totalAmount - $totalPaid;
-//     }
-
-//     return view('batches.show', compact(
-//         'batch',
-//         'invoice',
-//         'totalAmount',
-//         'totalPaid',
-//         'remaining'
-//     ));
-// }
 
 public function show($id)
 {
@@ -86,21 +120,54 @@ public function show($id)
         'invoice.payments'
     ])->findOrFail($id);
 
+    /*
+    |--------------------------------------------------------------------------
+    | ONLY FETCH CANDIDATES ADDED IN THIS BATCH
+    |--------------------------------------------------------------------------
+    */
+
+    $candidates = DB::table('batch_assignment_students as bas')
+        ->join('mobilizations as m', 'm.id', '=', 'bas.student_id')
+        ->join('assignments as a', 'a.id', '=', 'bas.assignment_id')
+        ->where('bas.batch_id', $batch->id)
+        ->select(
+            'bas.id',
+            'bas.batch_id',
+            'bas.assignment_id',
+            'bas.student_id',
+            'm.id as candidate_id',
+            'm.name as candidate_name',
+            'm.mobile',
+            'a.assignment_name',
+            'bas.created_at'
+        )
+        ->orderBy('bas.created_at', 'desc')
+        ->get();
+
+    $candidatesByAssignment = $candidates->groupBy('assignment_id');
+
+    $totalCandidates = $candidates->count();
+
+    /*
+    |--------------------------------------------------------------------------
+    | EXISTING COUNTS
+    |--------------------------------------------------------------------------
+    */
+
     foreach ($batch->assignments as $assignment) {
 
-    // students in batch
-    $assignment->in_batch = DB::table('batch_assignment_students')
-        ->where('batch_id', $batch->id)
-        ->where('assignment_id', $assignment->id)
-        ->count();
+        $assignment->in_batch = DB::table('batch_assignment_students')
+            ->where('batch_id', $batch->id)
+            ->where('assignment_id', $assignment->id)
+            ->count();
 
-    // billed qty from invoices
-    $assignment->billed_qty = DB::table('invoice_assignment_items')
-        ->join('invoices','invoices.id','=','invoice_assignment_items.invoice_id')
-        ->where('invoices.batch_id',$batch->id)
-        ->where('invoice_assignment_items.assignment_id',$assignment->id)
-        ->sum('invoice_assignment_items.quantity');
-}
+        $assignment->billed_qty = DB::table('invoice_assignment_items')
+            ->join('invoices','invoices.id','=','invoice_assignment_items.invoice_id')
+            ->where('invoices.batch_id',$batch->id)
+            ->where('invoice_assignment_items.assignment_id',$assignment->id)
+            ->sum('invoice_assignment_items.quantity');
+    }
+
     $invoice = $batch->invoice;
 
     $totalAmount = 0;
@@ -123,10 +190,11 @@ public function show($id)
         'invoice',
         'totalAmount',
         'totalPaid',
-        'remaining'
+        'remaining',
+        'candidatesByAssignment',
+        'totalCandidates'
     ));
 }
-
 public function store(Request $request)
 {
     $request->validate([
@@ -299,33 +367,46 @@ public function updateStatus(Request $request, $id)
 
 public function assignCandidates(Request $request)
 {
-    $request->validate([
-        'batch_ids' => 'required|array',
-        'batch_ids.*' => 'exists:batches,id',
-        'assignment_id' => 'required|exists:assignments,id',
-        'candidate_ids' => 'required|array',
-    ]);
+    try {
 
-    foreach ($request->batch_ids as $batchId) {
-        foreach ($request->candidate_ids as $candidateId) {
-            DB::table('batch_assignment_students')->updateOrInsert(
-                [
-                    'batch_id' => $batchId,
-                    'assignment_id' => $request->assignment_id,
-                    'student_id' => $candidateId,
-                ],
-                [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
+        $request->validate([
+            'candidate_ids' => 'required|array',
+            'batch_ids'     => 'required|array',
+            'assignment_id' => 'required|exists:assignments,id',
+        ]);
+
+        foreach ($request->batch_ids as $batchId) {
+
+            foreach ($request->candidate_ids as $candidateId) {
+
+                DB::table('batch_assignment_students')->updateOrInsert(
+                    [
+                        'batch_id'      => $batchId,
+                        'assignment_id' => $request->assignment_id,
+                        'student_id'    => $candidateId,
+                    ],
+                    [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
         }
-    }
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Candidates assigned to batches successfully!'
-    ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Candidates assigned successfully'
+        ]);
+
+    } catch (\Exception $e) {
+
+        \Log::error($e);
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
 }
 
 public function batchPdf($id)

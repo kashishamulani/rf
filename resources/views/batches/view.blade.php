@@ -161,21 +161,7 @@ td {
                 <span class="badge badge-green">{{ $totalCandidates }} Candidates</span>
             </div>
         </div>
-        <!-- 
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <a href="{{ route('batches.trackingSheet',$batch->id) }}" class="btn btn-green" target="_blank">
-                <i class="fa-solid fa-file-pdf"></i> Download Tracking Sheet
-            </a>
-              <a href="{{ route('batches.trackingSheet',$batch->id) }}" class="btn btn-primary" target="_blank"
-                style="background:#16a34a;">
-                <i class="fa-solid fa-file-pdf"></i> PDF
-            </a>
 
-            <a href="{{ route('batches.index') }}" class="btn btn-gray">
-                <i class="fa-solid fa-arrow-left"></i> Back
-            </a>
-           
-        </div> -->
 
         <div style="display:flex;gap:10px;flex-wrap:wrap">
 
@@ -232,10 +218,10 @@ td {
                                 {{ $candidate->candidate_name }}
                                 <br>
                                 <small style="color:#6b7280">
-                                    ID: {{ $candidate->student_id }}
+                                    Mobile: {{ $candidate->mobile }}
                                 </small>
                             </td>
-                            <td>{{ $candidate->assignment_name }}</td>
+                            <td>{{ optional($batch->assignments->firstWhere('id', $assignmentId))->assignment_name }}</td>
                             <td>{{ \Carbon\Carbon::parse($candidate->created_at)->format('d M Y') }}</td>
                             <td>
                                 <form
