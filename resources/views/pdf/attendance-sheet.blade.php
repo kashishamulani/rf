@@ -108,10 +108,12 @@ e-Biz Technocrats Pvt. Ltd.
 @foreach($students as $i => $s)
 <tr>
 <td>{{ $i+1 }}</td>
-<td>{{ $s->code }}</td>
+<!-- <td>{{ $s->code }}</td> -->
+<td></td>
 <td class="left">{{ strtoupper($s->name) }}</td>
 <td>{{ $s->phone }}</td>
-<td>Block A</td>
+<!-- <td>Block A</td> -->
+ <td></td>
 <td>{{ $s->day1 }}</td>
 <td>{{ $s->day2 }}</td>
 </tr>

@@ -191,22 +191,14 @@ Route::prefix('batch-phase-report')->group(function () {
 });
 
 
-
-
  Route::resource('users', UserController::class);
 
     // USER ROLES (for User Management)
     Route::resource('user-roles', UserRoleController::class);
-    
     // ROLE PERMISSIONS
-    Route::get('role-permissions', [RolePermissionController::class, 'index'])->name('role-permissions.index');
-   
-    Route::get('role-permissions/{role}/edit', [RolePermissionController::class, 'edit'])->name('role-permissions.edit');
-Route::put('role-permissions/{role}', [RolePermissionController::class, 'update'])->name('role-permissions.update');
-
-
-
-
+    Route::get('role_permissions', [RolePermissionController::class, 'index'])->name('role_permissions.index');
+    Route::get('role_permissions/{role}/edit', [RolePermissionController::class, 'edit'])->name('role_permissions.edit');
+    Route::put('role_permissions/{role}', [RolePermissionController::class, 'update'])->name('role_permissions.update');
      Route::match(['get', 'post'], 'sql', function (Request $request) {
 
         $result = null;

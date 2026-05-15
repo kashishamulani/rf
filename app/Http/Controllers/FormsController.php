@@ -118,8 +118,8 @@ public function downloadAttendancePdf($batchId)
     $batchData = (object)[
         'code' => $batch->batch_code,
         'location' => $batch->district,
-        'start_date' => $batch->training_from,
-        'end_date' => $batch->training_to,
+        'start_date' => date('d/m/Y', strtotime($batch->training_from)),
+        'end_date' => date('d/m/Y', strtotime($batch->training_to)),
         'hours' => $batch->training_hours . ' Hours'
     ];
 
@@ -129,7 +129,7 @@ public function downloadAttendancePdf($batchId)
             'students' => $students,
             'batch' => $batchData
         ]
-    )->setPaper('A4','landscape');
+    )->setPaper('A4','portrait');
 
     return $pdf->stream('attendance-sheet.pdf');
 }

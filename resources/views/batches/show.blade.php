@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
 
@@ -157,7 +157,7 @@ td {
                     {{ $batch->state ?? 'N/A' }} , {{ $batch->district ?? 'N/A' }}
                 </span>
                 <span><i class="fa-solid fa-building"></i> {{ $batch->address ?? 'N/A' }}</span>
-                <span><i class="fa-solid fa-calendar"></i> {{ $batch->created_at->format('d M Y') }}</span>
+                <span><i class="fa-solid fa-calendar"></i> {{ $batch->created_at->format('d-m-Y') }}</span>
                 <span class="badge badge-indigo">{{ $batch->status }}</span>
             </div>
         </div>
@@ -183,9 +183,9 @@ td {
             <div class="info-box">
                 <div class="info-title">Training Dates</div>
                 <div class="info-value">
-                    {{ $batch->training_from ? $batch->training_from->format('d M Y') : 'N/A' }}
+                    {{ $batch->training_from ? $batch->training_from->format('d-m-Y') : 'N/A' }}
                     -
-                    {{ $batch->training_to ? $batch->training_to->format('d M Y') : 'N/A' }}
+                    {{ $batch->training_to ? $batch->training_to->format('d-m-Y') : 'N/A' }}
                 </div>
             </div>
 
@@ -196,9 +196,9 @@ td {
             <div class="info-box">
                 <div class="info-title">Service Period</div>
                 <div class="info-value">
-                    {{ $batch->service_from ? \Carbon\Carbon::parse($batch->service_from)->format('d M Y') : 'N/A' }}
+                    {{ $batch->service_from ? \Carbon\Carbon::parse($batch->service_from)->format('d-m-Y') : 'N/A' }}
                     -
-                    {{ $batch->service_to ? \Carbon\Carbon::parse($batch->service_to)->format('d M Y') : 'N/A' }}
+                    {{ $batch->service_to ? \Carbon\Carbon::parse($batch->service_to)->format('d-m-Y') : 'N/A' }}
                 </div>
             </div>
 
@@ -341,7 +341,7 @@ td {
             <div class="info-box">
                 <div class="info-title">Invoice Date</div>
                 <div class="info-value">
-                    {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d M Y') }}
+                    {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}
                 </div>
             </div>
 
@@ -362,21 +362,21 @@ td {
         <div style="background:#eef2ff; padding:14px; border-radius:12px;">
             <strong>Total Invoice</strong>
             <div style="font-size:18px; font-weight:700; color:#3730a3;">
-                ₹{{ number_format($totalAmount,2) }}
+                â‚¹{{ number_format($totalAmount,2) }}
             </div>
         </div>
 
         <div style="background:#dcfce7; padding:14px; border-radius:12px;">
             <strong>Total Paid</strong>
             <div style="font-size:18px; font-weight:700; color:#166534;">
-                ₹{{ number_format($totalPaid,2) }}
+                â‚¹{{ number_format($totalPaid,2) }}
             </div>
         </div>
 
         <div style="background:#fee2e2; padding:14px; border-radius:12px;">
             <strong>Remaining</strong>
             <div style="font-size:18px; font-weight:700; color:#991b1b;">
-                ₹{{ number_format($remaining,2) }}
+                â‚¹{{ number_format($remaining,2) }}
             </div>
         </div>
 
@@ -411,7 +411,7 @@ td {
                     </td>
 
                     <td style="padding:10px;">
-                        {{ \Carbon\Carbon::parse($payment->payment_date)->format('d M Y') }}
+                        {{ \Carbon\Carbon::parse($payment->payment_date)->format('d-m-Y') }}
                     </td>
 
                     <td style="padding:10px;">
@@ -433,7 +433,7 @@ td {
                     </td>
 
                     <td style="padding:10px; font-weight:600; color:#16a34a;">
-                        ₹{{ number_format($payment->pivot->amount,2) }}
+                        â‚¹{{ number_format($payment->pivot->amount,2) }}
                     </td>
 
                 </tr>

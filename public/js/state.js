@@ -28,22 +28,25 @@ document.addEventListener("DOMContentLoaded", function () {
             stateDropdown.innerHTML =
                 '<option value="">Select State</option>';
 
+            let selectedStateId = null;
+
             states.forEach(state => {
 
                 const option = document.createElement("option");
 
                 option.value = state.name;
-option.textContent = state.name;
-option.dataset.id = state.id;
+                option.textContent = state.name;
+                option.dataset.id = state.id;
                 if (String(selectedState) === String(state.name)) {
                     option.selected = true;
+                    selectedStateId = state.id;
                 }
 
                 stateDropdown.appendChild(option);
             });
 
-            if (selectedState) {
-                loadDistricts(selectedState, selectedDistrict);
+            if (selectedStateId) {
+                loadDistricts(selectedStateId, selectedDistrict);
             }
         })
         .catch(error => {

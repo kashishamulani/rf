@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
 
@@ -222,7 +222,7 @@ td {
                                 </small>
                             </td>
                             <td>{{ optional($batch->assignments->firstWhere('id', $assignmentId))->assignment_name }}</td>
-                            <td>{{ \Carbon\Carbon::parse($candidate->created_at)->format('d M Y') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($candidate->created_at)->format('d-m-Y') }}</td>
                             <td>
                                 <form
                                     action="{{ route('batches.candidates.destroy', [$batch->id, $candidate->candidate_id]) }}"

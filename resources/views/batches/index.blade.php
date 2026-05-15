@@ -1,4 +1,4 @@
-@extends('layouts.app') {{-- Includes navbar & sidebar --}}
+﻿@extends('layouts.app') {{-- Includes navbar & sidebar --}}
 
 @section('content')
 <div class="p-6">
@@ -163,7 +163,7 @@
                     <th style="padding:14px;">Batch Code</th>
                     <th style="padding:14px;">Location</th>
 
-                    {{-- ✅ ADD THIS --}}
+                    {{-- âœ… ADD THIS --}}
                     <th style="padding:14px;">Batch Size</th>
 
                     <th style="padding:14px;">Assignments</th>
@@ -216,7 +216,7 @@
                         </span>
                         @endforeach
                         @else
-                        <span style="color:#9ca3af;">—</span>
+                        <span style="color:#9ca3af;">â€”</span>
                         @endif
                     </td> -->
 
@@ -248,7 +248,7 @@
                         </span>
                         @endforeach
                         @else
-                        <span style="color:#9ca3af;">—</span>
+                        <span style="color:#9ca3af;">â€”</span>
                         @endif
                     </td>
 
@@ -284,7 +284,7 @@
                     </td>
 
                     <td style="padding:14px;">
-                        {{ $batch->created_at->format('d M Y') }}
+                        {{ $batch->created_at->format('d-m-Y') }}
                     </td>
 
                     {{-- CANDIDATES --}}
