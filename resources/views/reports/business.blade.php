@@ -156,7 +156,7 @@
 
         <div>
             <label style="font-size:12px;">To Date</label><br>
-            <input type="date" name="to_date" value="{{ requlsest('to_date') }}"
+            <input type="date" name="to_date" value="{{ request('to_date') }}"
                 style="padding:8px 12px;border-radius:10px;border:1px solid #e5e7eb;">
         </div>
 
@@ -195,6 +195,7 @@
     @php
     $grandAssignments = 0;
     $grandBatches = 0;
+    $grandStudents = 0;
     $grandValue = 0;
     $grandPayment = 0;
     @endphp
@@ -209,6 +210,7 @@
                     <th>State</th>
                     <th>Assignments</th>
                     <th>Batches</th>
+                    <th>Students</th>
                     <th>Total Value</th>
                     <th>Total Payment</th>
                 </tr>
@@ -221,6 +223,7 @@
                 @php
                 $grandAssignments += $row->total_assignments;
                 $grandBatches += $row->total_batches;
+                $grandStudents += $row->total_students;
                 $grandValue += $row->total_value;
                 $grandPayment += $row->total_payment;
                 @endphp
@@ -265,6 +268,10 @@
 
                     </td>
 
+                    <td>
+                        {{ $row->total_students ?? 0 }}
+                    </td>
+
                     <td style="font-weight:700; color:#4338ca;">
                         ₹{{ number_format($row->total_value ?? 0,2) }}
                     </td>
@@ -278,7 +285,7 @@
                 @empty
 
                 <tr>
-                    <td colspan="6" style="padding:20px; color:#9ca3af;">
+                    <td colspan="7" style="padding:20px; color:#9ca3af;">
                         No report data found.
                     </td>
                 </tr>
@@ -298,6 +305,10 @@
 
                     <td>
                         {{ $grandBatches }}
+                    </td>
+
+                    <td>
+                        {{ $grandStudents }}
                     </td>
 
                     <td style="color:#4338ca;">

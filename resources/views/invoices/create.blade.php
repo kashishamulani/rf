@@ -3,82 +3,79 @@
 @section('content')
 
 <style>
-.form-card {
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(14px);
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-    padding: 20px 24px;
-    width: 100%;
-    max-width: 1100px;
-}
-
-.form-group {
-    margin-bottom: 12px;
+.field {
     display: flex;
     flex-direction: column;
 }
 
-.form-label {
+.field label {
+    font-size: 13px;
     font-weight: 600;
+    margin-bottom: 6px;
     color: #4338ca;
-    font-size: 14px;
-    margin-bottom: 4px;
 }
 
-.form-input,
-.form-select,
-.form-textarea {
-    width: 100%;
-    padding: 8px 10px;
+.field input,
+.field select {
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+/* BACK BUTTON */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
     border-radius: 10px;
-    border: 1px solid rgba(99, 102, 241, 0.35);
-    font-size: 14px;
-}
-
-.grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-}
-
-.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    align-items: end;
-}
-
-.btn-primary {
     background: linear-gradient(135deg, #6366f1, #ec4899);
     color: #fff;
-    font-weight: 600;
-    border-radius: 14px;
-    padding: 10px 20px;
-    border: none;
-}
-
-.btn-back {
-    background: #e5e7eb;
-    padding: 8px 16px;
-    border-radius: 12px;
     text-decoration: none;
     font-weight: 600;
+    transition: 0.2s;
 }
 
+.back-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* SECTION HEADINGS */
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4f46e5;
+    margin-bottom: 8px;
+    margin-top: 24px;
+}
+
+/* GRID SYSTEM */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+/* ALERT ERROR */
 .alert-error {
+    margin-bottom: 24px;
+    padding: 16px 18px;
+    border-radius: 14px;
     background: #fee2e2;
+    border: 1px solid #fecaca;
     color: #991b1b;
-    padding: 10px 14px;
-    border-radius: 12px;
-    margin-bottom: 14px;
 }
 
+/* TABLE STYLES */
 .po-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 16px;
-    display: none;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    overflow: hidden;
 }
 
 .po-table thead {
@@ -88,8 +85,14 @@
 
 .po-table th,
 .po-table td {
-    padding: 9px;
+    padding: 12px 10px;
     font-size: 13px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.po-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.05);
 }
 
 .table-wrapper {
@@ -100,169 +103,238 @@
 
 .table-title {
     font-weight: 600;
-    color: #4338ca;
-    margin-bottom: 6px;
+    color: #4f46e5;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+/* BUTTON STYLES */
+.btn-primary {
+    margin-top: 20px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* FORM CARD */
+.form-card {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 12px;
+    border-radius: 18px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* TYPOGRAPHY */
+h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4f46e5;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 11px;
+}
+
+input[type="text"],
+input[type="file"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+select,
+textarea {
+    padding: 6px 8px;
+    font-size: 12px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    width: 100%;
+    height: 42px;
+    box-sizing: border-box;
+}
+
+textarea {
+    height: auto;
+    min-height: 60px;
+}
+
+/* INFO BOX */
+.info-box {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: #dbeafe;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    font-size: 13px;
 }
 </style>
 
-<div style="padding:12px;width:100%;display:flex;flex-direction:column;align-items:center;">
+<div style="display:flex; justify-content:center; width:100%;">
 
-    <div style="width:100%;max-width:1100px;display:flex;justify-content:flex-end;margin-bottom:12px;">
-        <a href="{{ route('invoices.index') }}" class="btn-back">← Back</a>
-    </div>
+    <form method="POST" action="{{ route('invoices.store') }}" enctype="multipart/form-data"
+        style="width:100%; background:rgba(255,255,255,0.85); padding:12px; border-radius:18px; backdrop-filter:blur(14px); box-shadow:0 20px 40px rgba(0,0,0,0.08);">
 
-    <form action="{{ route('invoices.store') }}" method="POST" class="form-card">
         @csrf
 
-        @if($errors->any())
-        <div class="alert-error">
-            <ul style="margin:0;padding-left:18px;">
-                @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
+        {{-- ERRORS --}}
+        @if ($errors->any())
+        <div
+            style="margin-bottom:24px; padding:16px 18px; border-radius:14px; background:#fee2e2; border:1px solid #fecaca; color:#991b1b;">
+            <strong>Please fix the following errors:</strong>
+            <ul style="margin-top:8px; padding-left:18px;">
+                @foreach ($errors->all() as $error)
+                <li>• {{ $error }}</li>
                 @endforeach
             </ul>
         </div>
         @endif
 
-        <h2 style="text-align:center;margin-bottom:16px;
-background:linear-gradient(135deg,#6366f1,#ec4899);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;">
-            Create Invoice
-        </h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:12px; ">
 
-        <div class="grid-2">
-
-            <div class="form-group">
-                <label class="form-label">Invoice Number *</label>
-                <input type="text" name="invoice_number" class="form-input" required>
+            {{-- HEADER BAR --}}
+            <div style="width:100%;">
+                <div class="form-top-bar" style="display: flex; justify-content: flex-end;">
+                    <a href="{{ route('invoices.index') }}" class="back-btn">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Back
+                    </a>
+                </div>
             </div>
-
-            <div class="form-group">
-                <label class="form-label">Invoice Date *</label>
-                <input type="date" name="invoice_date" value="{{ old('payment_date',date('Y-m-d')) }}"
-                    class="form-input" required>
-            </div>
-
         </div>
 
-        <div class="grid-3" style="margin-top:10px;">
+        <div style="margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:700; color:#4f46e5; margin-bottom:8px; text-align:center;">
+                <i class="fa-solid fa-file-invoice"></i> Create Invoice
+            </h2>
+        </div>
 
-            <div class="form-group">
-                <label class="form-label">Batch *</label>
-                <select name="batch_id" id="batchSelect" class="form-select" required>
-                    <option value="">-- Select Batch --</option>
+        {{-- INFO BOX --}}
+        <!-- <div class="info-box">
+            <i class="fa-solid fa-info-circle"></i>
+            <strong>Guidelines:</strong> Fill all required fields marked with <span style="color:red">*</span>.
+        </div> -->
 
-                    @foreach($batches as $batch)
-                    <option value="{{ $batch->id }}" data-size="{{ $batch->batch_size }}" data-po="{{ $batch->po_id }}">
-                        {{ $batch->batch_code }}
-                    </option>
-                    @endforeach
+        {{-- INVOICE DETAILS SECTION --}}
+        <div class="step active" style="margin-bottom:24px;">
+       
+            <div class="form-grid">
+                <div class="field">
+                    <label>Invoice Number <span style="color:red">*</span></label>
+                    <input type="text" name="invoice_number" required class="form-control">
+                </div>
 
-                </select>
+                <div class="field">
+                    <label>Invoice Date <span style="color:red">*</span></label>
+                    <input type="date" name="invoice_date" value="{{ old('payment_date', date('Y-m-d')) }}" required class="form-control">
+                </div>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label class="form-label">Total Batch Size</label>
-                <input type="number" id="batchSize" class="form-input" readonly>
+        {{-- BATCH DETAILS SECTION --}}
+        <div class="step active" style="margin-bottom:24px;">
+
+            <div class="form-grid">
+                <div class="field">
+                    <label>Batch <span style="color:red">*</span></label>
+                    <select name="batch_id" id="batchSelect" class="form-select" required>
+                        <option value="">-- Select Batch --</option>
+                        @foreach($batches as $batch)
+                        <option value="{{ $batch->id }}" data-size="{{ $batch->batch_size }}" data-po="{{ $batch->po_id }}">
+                            {{ $batch->batch_code }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Total Batch Size</label>
+                    <input type="number" id="batchSize" class="form-input" readonly>
+                </div>
+
+                <div class="field">
+                    <label>Batch Value (Incl GST)</label>
+                    <input type="text" id="batchValue" class="form-input" readonly>
+                </div>
             </div>
-
-            <div class="form-group">
-                <label class="form-label">Batch Value (Incl GST)</label>
-                <input type="text" id="batchValue" class="form-input" readonly>
-            </div>
-
         </div>
 
         <input type="hidden" id="batchQuantityHidden" name="batch_quantity">
 
-        <div class="form-group">
-            <label class="form-label">Payment Detail</label>
-            <textarea name="payment_detail" rows="2" class="form-textarea"></textarea>
+        <div class="field" style="margin-bottom:16px;">
+            <label>Payment Detail</label>
+            <textarea name="payment_detail" rows="2" class="form-textarea" style="height: auto;"></textarea>
         </div>
 
-        <!-- Assignment Table -->
-
+        {{-- ASSIGNMENT BILLING TABLE --}}
         <div class="table-wrapper">
-
-            <div class="table-title"></div>Assignment Billing
+            <div class="table-title">Assignment Billing</div>
+            <table id="invoiceAssignmentTable" class="po-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Assignment</th>
+                        <th>Requirement</th>
+                        <th>Remaining</th>
+                        <th>In Batch</th>
+                        <th>Billed Qty</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceAssignmentBody"></tbody>
+            </table>
         </div>
 
-        <table id="invoiceAssignmentTable" class="po-table">
+        {{-- PO ITEM BILLING TABLE --}}
+        <div class="table-wrapper">
+            <div class="table-title">PO Item Billing</div>
+            <table id="invoicePoTable" class="po-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Item</th>
+                        <th>PO Qty</th>
+                        <th>Remaining</th>
+                        <th>Rate</th>
+                        <th>Billed Qty</th>
+                    </tr>
+                </thead>
+                <tbody id="invoicePoBody"></tbody>
+            </table>
+        </div>
 
-            <thead>
-                <tr>
-                    <th>S.No</th>
-                    <th>Assignment</th>
-                    <th>Requirement</th>
-                    <th>Remaining</th>
-                    <th>In Batch</th>
-                    <th>Billed Qty</th>
-                </tr>
-            </thead>
+        {{-- BATCH STUDENTS TABLE --}}
+        <div class="table-wrapper">
+            <div class="table-title">Batch Students</div>
+            <table id="studentTable" class="po-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Student Name</th>
+                        <th>Assignment</th>
+                        <th>Mobile</th>
+                        <th>State</th>
+                        <th>City</th>
+                    </tr>
+                </thead>
+                <tbody id="studentBody"></tbody>
+            </table>
+        </div>
 
-            <tbody id="invoiceAssignmentBody"></tbody>
+        <div style="text-align:center; margin-top:20px;">
+            <button type="submit" class="btn-primary">Save Invoice</button>
+        </div>
 
-        </table>
-
-</div>
-
-<!-- PO Table -->
-
-<div class="table-wrapper">
-
-    <div class="table-title">PO Item Billing</div>
-
-    <table id="invoicePoTable" class="po-table">
-
-        <thead>
-            <tr>
-                <th>S.No</th>
-                <th>Item</th>
-                <th>PO Qty</th>
-                <th>Remaining</th>
-                <th>Rate</th>
-                <th>Billed Qty</th>
-            </tr>
-        </thead>
-
-        <tbody id="invoicePoBody"></tbody>
-
-    </table>
-
-</div>
-
-
-<!-- Students Table -->
-
-<div class="table-wrapper">
-
-    <div class="table-title">Batch Students</div>
-
-    <table id="studentTable" class="po-table">
-
-        <thead>
-            <tr>
-                <th>S.No</th>
-                <th>Student Name</th>
-                <th>Assignment</th>
-                <th>Mobile</th>
-                <th>State</th>
-                <th>City</th>
-            </tr>
-        </thead>
-
-        <tbody id="studentBody"></tbody>
-
-    </table>
-
-</div>
-
-<div style="text-align:center;margin-top:20px;">
-    <button type="submit" class="btn-primary">Save Invoice</button>
-</div>
-
-</form>
+    </form>
 </div>
 
 <script>
@@ -326,7 +398,8 @@ function loadAssignments(batchId) {
                                 name="billed_assignments[${a.id}]"
                                 min="0"
                                 max="${a.build ?? 0}"
-                                class="form-input">
+                                class="form-input"
+                                style="width:100px;">
                         </td>
                     </tr>
                 `;
@@ -419,6 +492,7 @@ function loadPoItems(poId) {
                                 min="0"
                                 max="${remaining}"
                                 class="form-input billed-po"
+                                style="width:100px;"
                                 oninput="updateBatchValue()">
                         </td>
                     </tr>

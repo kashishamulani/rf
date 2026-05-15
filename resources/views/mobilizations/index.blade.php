@@ -794,7 +794,7 @@ table {
                     <th style="padding:6px;">Samarth</th>
                     <th style="padding:6px;">Location</th>
 
-                    <th style="padding:6px;">Ass</th>
+                    <th style="padding:6px;">Assignment</th>
                     <th style="padding:6px;">Status</th>
                     <th style="padding:6px;">Added On</th>
                     <th style="padding:6px;">Actions</th>

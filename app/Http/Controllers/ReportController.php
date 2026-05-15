@@ -15,6 +15,8 @@ class ReportController extends Controller
             ->leftJoin('batches', 'batches.id', '=', 'assignment_batch.batch_id')
             ->leftJoin('invoices', 'invoices.batch_id', '=', 'batches.id')
             ->leftJoin('invoice_payment', 'invoice_payment.invoice_id', '=', 'invoices.id')
+            ->leftJoin(DB::raw('(SELECT assignment_id, COUNT(DISTINCT mobilization_id) AS student_count FROM assignment_students GROUP BY assignment_id) AS assignment_student_counts'), 'assignment_student_counts.assignment_id', '=', 'assignments.id')
+            ->leftJoin('assignment_students', 'assignment_students.assignment_id', '=', 'assignments.id')
 
             ->select(
                 'assignments.state',
@@ -23,15 +25,11 @@ class ReportController extends Controller
 
                 DB::raw('COUNT(DISTINCT batches.id) as total_batches'),
 
-                DB::raw("
-                    GROUP_CONCAT(DISTINCT assignments.assignment_name 
-                    SEPARATOR ', ') as assignment_names
-                "),
+                DB::raw('COUNT(DISTINCT assignment_students.mobilization_id) as total_students'),
 
-                DB::raw("
-                    GROUP_CONCAT(DISTINCT batches.batch_code 
-                    SEPARATOR ', ') as batch_names
-                "),
+                DB::raw("GROUP_CONCAT(DISTINCT CONCAT(assignments.assignment_name, ' (', COALESCE(assignment_student_counts.student_count, 0), ')') SEPARATOR ', ') as assignment_names"),
+
+                DB::raw("GROUP_CONCAT(DISTINCT batches.batch_code SEPARATOR ', ') as batch_names"),
 
                 DB::raw('SUM(invoices.batch_value) as total_value'),
 

@@ -109,4 +109,8 @@ public function students()
 {
     return $this->hasMany(\App\Models\BatchAssignmentStudent::class, 'batch_id');
 }
+public function phaseReports()
+{
+    return $this->hasMany(BatchPhaseReport::class);
+}
 }

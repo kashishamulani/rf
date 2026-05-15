@@ -23,5 +23,10 @@ public function activityAssignments()
 {
     return $this->hasMany(ActivityAssignment::class);
 }
+
+public function batchReports()
+{
+    return $this->hasMany(BatchPhaseReport::class);
+}
 }
 

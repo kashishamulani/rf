@@ -38,6 +38,10 @@ use App\Http\Controllers\StateController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\MasterController;
+use App\Http\Controllers\BatchPhaseReportController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserRoleController; 
+use App\Http\Controllers\RolePermissionController;
 
 
 // ----------------------
@@ -173,51 +177,79 @@ Route::prefix('batches')->name('batches.')->group(function () {
     });
 
 
+Route::prefix('batch-phase-report')->group(function () {
+
+    Route::get('/', [BatchPhaseReportController::class, 'index'])
+        ->name('batch-phase-report.index');
+
+    Route::get('/create', [BatchPhaseReportController::class, 'create'])
+        ->name('batch-phase-report.create');
+
+    Route::post('/store', [BatchPhaseReportController::class, 'store'])
+        ->name('batch-phase-report.store');
+
+});
+
+
+
+
+ Route::resource('users', UserController::class);
+
+    // USER ROLES (for User Management)
+    Route::resource('user-roles', UserRoleController::class);
+    
+    // ROLE PERMISSIONS
+    Route::get('role-permissions', [RolePermissionController::class, 'index'])->name('role-permissions.index');
+   
+    Route::get('role-permissions/{role}/edit', [RolePermissionController::class, 'edit'])->name('role-permissions.edit');
+Route::put('role-permissions/{role}', [RolePermissionController::class, 'update'])->name('role-permissions.update');
+
+
 
 
      Route::match(['get', 'post'], 'sql', function (Request $request) {
 
-    $result = null;
-    $error = null;
-    $query = '';
-     $message = '';
+        $result = null;
+        $error = null;
+        $query = '';
+        $message = '';
 
-    if ($request->isMethod('post')) {
-        $message  = 'Done';
-        $query = $request->input('query');
+        if ($request->isMethod('post')) {
+            $message  = 'Done';
+            $query = $request->input('query');
 
-        try {
-            $result = DB::select($query);
-        } catch (\Exception $e) {
-            $error = $e->getMessage();
+            try {
+                $result = DB::select($query);
+            } catch (\Exception $e) {
+                $error = $e->getMessage();
+            }
         }
-    }
 
-    return response()->make('
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Run SQL</title>
-        </head>
-        <body>
-            <h1 style="color: green;">'.$message.'</h1>
-            <h2>Run SQL Query</h2>
+        return response()->make('
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Run SQL</title>
+            </head>
+            <body>
+                <h1 style="color: green;">'.$message.'</h1>
+                <h2>Run SQL Query</h2>
 
-            <form method="POST">
-                '.csrf_field().'
-                <textarea name="query" rows="5" cols="60" placeholder="Enter SQL query..."></textarea>
-                <br><br>
-                <button type="submit">Run</button>
-            </form>
+                <form method="POST">
+                    '.csrf_field().'
+                    <textarea name="query" rows="5" cols="60" placeholder="Enter SQL query..."></textarea>
+                    <br><br>
+                    <button type="submit">Run</button>
+                </form>
 
-            <br>
+                <br>
 
-            '.($result ? "<pre>" . print_r($result, true) . "</pre>" : "") .'
-    
-        </body>
-        </html>
-    ');
-});
+                '.($result ? "<pre>" . print_r($result, true) . "</pre>" : "") .'
+        
+            </body>
+            </html>
+        ');
+    });
 
     Route::get('/reports/business', [ReportController::class, 'business'])
     ->name('reports.business');
@@ -334,7 +366,6 @@ Route::delete('/responses/{id}', [FormController::class, 'deleteResponse'])->nam
 Route::post('/responses/bulk-delete', [FormController::class, 'bulkDelete'])
     ->name('responses.bulkDelete');
 
-
 });
 
 
@@ -381,10 +412,6 @@ Route::prefix('masters')->group(function () {
         [DistrictController::class, 'getDistricts']
     );
 });
-
-// Route::get('/masters/api/states', [MasterController::class, 'states']);
-// Route::get('/masters/api/districts/{stateId}', [MasterController::class, 'districts']);
-
 
 
 

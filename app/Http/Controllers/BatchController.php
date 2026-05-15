@@ -16,21 +16,6 @@ use App\Models\InvoicePoItem;
 
 class BatchController extends Controller
 {
-// public function index()
-// {
-//     $batches = Batch::with([
-//         'po',
-//         'assignments' => function ($q) {
-//             $q->withPivot('build');
-//         },
-//         'invoice',
-//         'invoice.payments'
-//     ])
-//     ->orderBy('id','desc')
-//     ->get();
-
-//     return view('batches.index', compact('batches'));
-// }
 
 public function index(Request $request)
 {

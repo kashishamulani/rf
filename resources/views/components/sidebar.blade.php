@@ -245,13 +245,10 @@ li:not(.menu-group)>a:hover span {
                         Invoices</span></a>
                 <a href="{{ route('payments.index') }}" class="{{ Route::is('payments.*') ? 'active' : '' }}"><span>💰
                         Payments</span></a>
-
             </div>
         </li>
 
         {{-- PROGRESS --}}
-        <!-- <li class="menu-group {{ Route::is('activity-assignments.*','team.task.report','reporting.log','assignments.progress') ? 'active' : '' }}"
-            id="progressMenu"> -->
         <li class="menu-group" id="progressMenu">
             <a id="progressToggle">
                 <span>📊 Progress</span>
@@ -278,22 +275,18 @@ li:not(.menu-group)>a:hover span {
                 <span class="arrow">▾</span>
             </a>
             <div class="submenu">
-
                 <a href="{{ route('links.index') }}" class="{{ Route::is('links.*') ? 'active' : '' }}"><span>🔗 Forms
                         template</span></a>
-
                 <a href="{{ route('link-assignments.index') }}"
                     class="{{ Route::is('link-assignments.*') ? 'active' : '' }}">
                     <span>🔗 Assignment Forms</span>
                 </a>
-
                 <a href="{{ route('mobilizations.index') }}"
                     class="{{ Route::is('mobilizations.*') ? 'active' : '' }}"><span>🗄 Mobilization</span></a>
             </div>
         </li>
 
         {{-- MASTER --}}
-
         <li class="menu-group" id="managementMenu">
             <a id="managementToggle">
                 <span>⚙️ Master</span>
@@ -313,65 +306,107 @@ li:not(.menu-group)>a:hover span {
                     class="{{ Route::is('team-members.*') ? 'active' : '' }}"><span>👥 Team Members</span></a>
                 <a href="{{ route('roles.index') }}" class="{{ Route::is('roles.*') ? 'active' : '' }}"><span>🛡️ Job
                         Roles</span></a>
-
                 <a href="{{ route('states.index') }}" class="{{ Route::is('states.*') ? 'active' : '' }}">
                     <span>🌍 State Master</span>
                 </a>
-
                 <a href="{{ route('districts.index') }}" class="{{ Route::is('districts.*') ? 'active' : '' }}">
                     <span>🏙 District Master</span>
                 </a>
-
                 <a href="{{ route('cities.index') }}" class="{{ Route::is('cities.*') ? 'active' : '' }}">
                     <span>📍 City Master</span>
                 </a>
             </div>
         </li>
 
-
+        {{-- REPORTS --}}
         <li class="menu-group" id="reportsMenu">
             <a id="reportsToggle">
                 <span>📊 Reports</span>
                 <span class="arrow">▾</span>
             </a>
-
             <div class="submenu">
                 <a href="{{ route('reports.business') }}" class="{{ Route::is('reports.business') ? 'active' : '' }}">
                     <span>📈 Business</span>
                 </a>
+                <a href="{{ route('batch-phase-report.index') }}"
+                    class="{{ Route::is('batch-phase-report.*') ? 'active' : '' }}">
+                    <span>📋 Batch Phase Report</span>
+                </a>
             </div>
         </li>
+
+        {{-- USER MANAGEMENT --}}
+       {{-- USER MANAGEMENT --}}
+@php
+    $user = auth()->user();
+@endphp
+
+@if($user && ($user->hasPermission('users_view') || 
+      $user->hasPermission('user_roles_view') ||   // Changed permission name
+      $user->hasPermission('role_permissions_view')))
+<li class="menu-group" id="userManagementMenu">
+    <a id="userManagementToggle">
+        <span>👤 User Management</span>
+        <span class="arrow">▾</span>
+    </a>
+    <div class="submenu">
+        {{-- USERS --}}
+        @if($user->hasPermission('users_view'))
+        <a href="{{ route('users.index') }}" class="{{ Route::is('users.*') ? 'active' : '' }}">
+            <span>👥 Users</span>
+        </a>
+        @endif
+
+        {{-- USER ROLES (changed from roles to user-roles) --}}
+        @if($user->hasPermission('user_roles_view'))
+        <a href="{{ route('user-roles.index') }}" class="{{ Route::is('user-roles.*') ? 'active' : '' }}">
+            <span>🛡️ User Roles</span>
+        </a>
+        @endif
+
+        {{-- ROLE PERMISSIONS --}}
+        @if($user->hasPermission('role_permissions_view'))
+        <a href="{{ route('role-permissions.index') }}"
+            class="{{ Route::is('role-permissions.*') ? 'active' : '' }}">
+            <span>🔐 Role Permissions</span>
+        </a>
+        @endif
+    </div>
+</li>
+
+        @endif
     </ul>
 </aside>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-
     const menus = document.querySelectorAll(".menu-group");
 
     menus.forEach(menu => {
-
-        const toggle = menu.querySelector("a");
+        const toggle = menu.querySelector(":scope > a");
         const activeLink = menu.querySelector(".submenu a.active");
 
-        // 🔹 Open menu if child is active
+        // Open menu if child is active
         if (activeLink) {
             menu.classList.add("active");
         }
 
-        toggle.addEventListener("click", function(e) {
-            e.preventDefault();
+        if (toggle) {
+            toggle.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
 
-            menus.forEach(m => {
-                if (m !== menu) {
-                    m.classList.remove("active");
-                }
+                // Close other menus
+                menus.forEach(m => {
+                    if (m !== menu && m.classList.contains("active")) {
+                        m.classList.remove("active");
+                    }
+                });
+
+                // Toggle current menu
+                menu.classList.toggle("active");
             });
-
-            menu.classList.toggle("active");
-        });
-
+        }
     });
-
 });
 </script>
